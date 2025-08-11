@@ -1,0 +1,247 @@
+import 'package:flutter/material.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _currentIndex = 0;
+
+  final List<String> sliderImages = [
+    'https://via.placeholder.com/600x300?text=Banner+1',
+    'https://via.placeholder.com/600x300?text=Banner+2',
+    'https://via.placeholder.com/600x300?text=Banner+3',
+  ];
+
+  final List<Map<String, dynamic>> products = [
+    {
+      "name": "Product 1",
+      "image": "https://via.placeholder.com/200x200?text=Product+1",
+      "price": 200,
+      "salePrice": 150,
+      "onSale": true,
+    },
+    {
+      "name": "Product 2",
+      "image": "https://via.placeholder.com/200x200?text=Product+2",
+      "price": 100,
+      "salePrice": null,
+      "onSale": false,
+    },
+    {
+      "name": "Product 3",
+      "image": "https://via.placeholder.com/200x200?text=Product+3",
+      "price": 300,
+      "salePrice": 250,
+      "onSale": true,
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Image.network('https://via.placeholder.com/150x50?text=App+Logo', height: 40),
+        centerTitle: true,
+        actions: [IconButton(icon: const Icon(Icons.shopping_cart_outlined), onPressed: () {})],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 10),
+
+            /// Image Slider
+            CarouselSlider(
+              options: CarouselOptions(
+                height: 180,
+                autoPlay: true,
+                enlargeCenterPage: true,
+                onPageChanged: (index, reason) {
+                  setState(() => _currentIndex = index);
+                },
+              ),
+              items: sliderImages.map((url) {
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(url, fit: BoxFit.cover, width: double.infinity),
+                );
+              }).toList(),
+            ),
+
+            /// Indicator
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: sliderImages.asMap().entries.map((entry) {
+                return Container(
+                  width: 8,
+                  height: 8,
+                  margin: const EdgeInsets.symmetric(horizontal: 3, vertical: 8),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _currentIndex == entry.key ? Colors.blue : Colors.grey,
+                  ),
+                );
+              }).toList(),
+            ),
+
+            /// Categories title
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text("Categories", style: Theme.of(context).textTheme.titleLarge),
+            ),
+            // TODO: Replace with dynamic category list from WooCommerce API
+            SizedBox(
+              height: 100,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: 10,
+                itemBuilder: (_, index) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Column(
+                      children: [
+                        CircleAvatar(radius: 30, backgroundColor: Colors.blue.shade100),
+                        const SizedBox(height: 4),
+                        Text("Cat $index", style: Theme.of(context).textTheme.bodySmall),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            /// Products title
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Text("Products", style: Theme.of(context).textTheme.titleLarge),
+            ),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.74,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+              ),
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                final product = products[index];
+                return Card(
+                  clipBehavior: Clip.hardEdge,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  child: Stack(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Stack(
+                            children: [
+                              AspectRatio(
+                                aspectRatio: 1,
+                                child: Image.network(
+                                  product["image"],
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported),
+                                ),
+                              ),
+                              if (product["onSale"])
+                                Positioned(
+                                  top: 8,
+                                  left: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.red,
+                                      borderRadius: BorderRadius.only(
+                                        topRight: Radius.circular(8),
+                                        bottomRight: Radius.circular(8),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      "SALE",
+                                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              product["name"],
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Row(
+                              children: [
+                                if (product["salePrice"] != null)
+                                  Flexible(
+                                    child: Text(
+                                      "\$${product["salePrice"]}",
+                                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                if (product["salePrice"] != null) const SizedBox(width: 5),
+                                Flexible(
+                                  child: Text(
+                                    "\$${product["price"]}",
+                                    style: TextStyle(
+                                      color: Colors.grey,
+                                      decoration: product["onSale"] ? TextDecoration.lineThrough : TextDecoration.none,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.blueAccent,
+                            borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomRight: Radius.circular(8)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blueAccent.withOpacity(0.4),
+                                spreadRadius: 1,
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            icon: const Icon(Icons.add_shopping_cart),
+                            color: Colors.white,
+                            tooltip: 'Add to Cart',
+                            onPressed: () {},
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
