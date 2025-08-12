@@ -13,9 +13,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _current = 0;
 
   final List<Map<String, String>> _pages = [
-    {'image': 'assets/1.png', 'title': 'Discover Products', 'description': 'Browse thousands of products from top brands.'},
-    {'image': 'assets/2.png', 'title': 'Secure Checkout', 'description': 'Fast & secure checkout with multiple payment options.'},
-    {'image': 'assets/3.png', 'title': 'Fast Delivery', 'description': 'Get your orders delivered to your door quickly.'},
+    {
+      'image': 'assets/onboarding/1.png',
+      'title': 'Discover Products',
+      'description': 'Browse thousands of products from top brands.',
+    },
+    {
+      'image': 'assets/onboarding/2.png',
+      'title': 'Secure Checkout',
+      'description': 'Fast & secure checkout with multiple payment options.',
+    },
+    {
+      'image': 'assets/onboarding/3.png',
+      'title': 'Fast Delivery',
+      'description': 'Get your orders delivered to your door quickly.',
+    },
   ];
 
   @override

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -45,9 +46,9 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Image.network('https://via.placeholder.com/150x50?text=App+Logo', height: 40),
-        centerTitle: true,
-        actions: [IconButton(icon: const Icon(Icons.shopping_cart_outlined), onPressed: () {})],
+        title: Image.asset('assets/logo.png', height: 40, color: Colors.white, colorBlendMode: BlendMode.srcIn),
+        centerTitle: false,
+        actions: [IconButton(icon: const Icon(FontAwesomeIcons.solidBell), onPressed: () {})],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -92,9 +93,136 @@ class _HomePageState extends State<HomePage> {
             /// Categories title
             Padding(
               padding: const EdgeInsets.all(12),
+              child: Text("Best Selling", style: Theme.of(context).textTheme.titleLarge),
+            ),
+            SizedBox(
+              height: 250, // enough to fit the card height
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                itemCount: products.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final product = products[index];
+                  return SizedBox(
+                    width: 180, // fixed card width for horizontal layout
+                    child: Card(
+                      clipBehavior: Clip.hardEdge,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      child: Stack(
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Stack(
+                                children: [
+                                  AspectRatio(
+                                    aspectRatio: 1,
+                                    child: Image.network(
+                                      product["image"],
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported),
+                                    ),
+                                  ),
+                                  if (product["onSale"])
+                                    Positioned(
+                                      top: 8,
+                                      left: 0,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.red,
+                                          borderRadius: BorderRadius.only(
+                                            topRight: Radius.circular(8),
+                                            bottomRight: Radius.circular(8),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          "SALE",
+                                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(
+                                  product["name"],
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Row(
+                                  children: [
+                                    if (product["salePrice"] != null)
+                                      Flexible(
+                                        child: Text(
+                                          "\$${product["salePrice"]}",
+                                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    if (product["salePrice"] != null) const SizedBox(width: 5),
+                                    Flexible(
+                                      child: Text(
+                                        "\$${product["price"]}",
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          decoration: product["onSale"] ? TextDecoration.lineThrough : TextDecoration.none,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.blueAccent,
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(8),
+                                  bottomRight: Radius.circular(8),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.blueAccent.withOpacity(0.4),
+                                    spreadRadius: 1,
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: IconButton(
+                                padding: EdgeInsets.zero,
+                                icon: const Icon(Icons.arrow_forward_ios),
+                                color: Colors.white,
+                                tooltip: 'Add to Cart',
+                                onPressed: () {},
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            /// Categories title
+            Padding(
+              padding: const EdgeInsets.all(12),
               child: Text("Categories", style: Theme.of(context).textTheme.titleLarge),
             ),
-            // TODO: Replace with dynamic category list from WooCommerce API
             SizedBox(
               height: 100,
               child: ListView.builder(
@@ -127,8 +255,8 @@ class _HomePageState extends State<HomePage> {
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 childAspectRatio: 0.74,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
+                crossAxisSpacing: 4,
+                mainAxisSpacing: 4,
               ),
               itemCount: products.length,
               itemBuilder: (context, index) {

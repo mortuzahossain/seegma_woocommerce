@@ -38,17 +38,19 @@ class ProfilePage extends StatelessWidget {
             elevation: 0,
             child: Column(
               children: [
-                // _buildOption(icon: FontAwesomeIcons.gauge, title: "Dashboard", onTap: () {}),
-                // _divider(),
                 _buildOption(icon: FontAwesomeIcons.user, title: "Account details", onTap: () {}),
                 _divider(),
                 _buildOption(icon: FontAwesomeIcons.lock, title: "Change Password", onTap: () {}),
                 _divider(),
                 _buildOption(icon: FontAwesomeIcons.boxOpen, title: "Orders", onTap: () {}),
                 _divider(),
+                _buildOption(icon: FontAwesomeIcons.solidHeart, title: "Favorites", onTap: () {}),
+                _divider(),
                 _buildOption(icon: FontAwesomeIcons.download, title: "Downloads", onTap: () {}),
                 _divider(),
                 _buildOption(icon: FontAwesomeIcons.locationDot, title: "Addresses", onTap: () {}),
+                _divider(),
+                _buildOption(icon: FontAwesomeIcons.headset, title: "Support", onTap: () {}),
                 _divider(),
                 _buildOption(icon: FontAwesomeIcons.fileContract, title: "Terms & Condition", onTap: () {}),
                 _divider(),
@@ -88,6 +90,7 @@ class ProfilePage extends StatelessWidget {
       FontAwesomeIcons.locationDot: Colors.purple, // Addresses
       FontAwesomeIcons.user: Colors.teal, // Account details
       FontAwesomeIcons.rightFromBracket: Colors.red, // Logout
+      FontAwesomeIcons.solidHeart: Colors.red, // Logout
       FontAwesomeIcons.fileContract: Colors.blueGrey, // Terms & Condition
       FontAwesomeIcons.shieldHalved: Colors.lightGreen, // Privacy Policy
     };

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:seegma_woocommerce/ui/home/dashboard.dart';
-import 'package:seegma_woocommerce/ui/others/onboarding.dart';
 import 'package:seegma_woocommerce/utils/themes.dart';
 
 void main() {

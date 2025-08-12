@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:seegma_woocommerce/ui/home/products.dart';
 
 class DiscoverPage extends StatelessWidget {
   const DiscoverPage({super.key});
@@ -91,7 +92,6 @@ class DiscoverPage extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            // Grid with 6 items visible and smaller icon/text + less spacing
             Expanded(
               child: GridView.builder(
                 itemCount: categories.length,
@@ -105,7 +105,14 @@ class DiscoverPage extends StatelessWidget {
                   final category = categories[index];
                   final gradient = borderGradients[index % borderGradients.length];
                   return GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ProductsPage(categorySlug: "categorySlug", categoryName: category['title']),
+                        ),
+                      );
+                    },
                     child: Card(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       elevation: 0,
