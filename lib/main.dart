@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:seegma_woocommerce/provider/category_provider.dart';
 import 'package:seegma_woocommerce/provider/home_provider.dart';
 import 'package:seegma_woocommerce/provider/slider_provider.dart';
 import 'package:seegma_woocommerce/ui/home/dashboard.dart';
@@ -13,6 +14,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => SliderProvider()),
         ChangeNotifierProvider(create: (_) => HomepageProvider()),
+        ChangeNotifierProvider(create: (_) => CategoriesProvider()),
       ],
       child: const MainApp(),
     ),

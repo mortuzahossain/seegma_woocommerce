@@ -24,7 +24,9 @@ class _HomePageState extends State<HomePage> {
     }
 
     final homepageProvider = Provider.of<HomepageProvider>(context, listen: false);
-    Future.microtask(() => homepageProvider.loadHomepageData());
+    if (homepageProvider.homepagedata.isEmpty) {
+      Future.microtask(() => homepageProvider.loadHomepageData());
+    }
   }
 
   @override
@@ -90,6 +92,7 @@ class _HomePageState extends State<HomePage> {
                 );
               },
             ),
+            SizedBox(height: 10),
 
             /// Categories title
             SizedBox(

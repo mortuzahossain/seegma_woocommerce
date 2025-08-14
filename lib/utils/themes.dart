@@ -9,6 +9,15 @@ class AppColors {
   static const Color lightBackground = Color(0xFFF5F5F5);
   static const Color darkBackground = Color(0xFF121212);
   static const Color darkSurface = Color(0xFF1E1E1E);
+
+  static const List<Gradient> borderGradients = [
+    LinearGradient(colors: [Colors.red, Colors.orange]),
+    LinearGradient(colors: [Colors.blue, Colors.lightBlueAccent]),
+    LinearGradient(colors: [Colors.green, Colors.lightGreenAccent]),
+    LinearGradient(colors: [Colors.purple, Colors.deepPurpleAccent]),
+    LinearGradient(colors: [Colors.teal, Colors.cyanAccent]),
+    LinearGradient(colors: [Colors.pink, Colors.deepOrangeAccent]),
+  ];
 }
 
 class AppTheme {

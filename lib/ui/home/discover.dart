@@ -1,42 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart' show Provider, Consumer;
+import 'package:seegma_woocommerce/provider/category_provider.dart';
 import 'package:seegma_woocommerce/ui/home/products.dart';
+import 'package:seegma_woocommerce/utils/themes.dart';
 
-class DiscoverPage extends StatelessWidget {
+class DiscoverPage extends StatefulWidget {
   const DiscoverPage({super.key});
 
-  final List<Map<String, dynamic>> categories = const [
-    {'title': 'Electronics', 'icon': 'https://cdn-icons-png.flaticon.com/512/263/263142.png'},
-    {'title': 'Clothing', 'icon': 'https://cdn-icons-png.flaticon.com/512/892/892458.png'},
-    {'title': 'Home & Garden', 'icon': 'https://cdn-icons-png.flaticon.com/512/1046/1046857.png'},
-    {'title': 'Sports', 'icon': 'https://cdn-icons-png.flaticon.com/512/2733/2733515.png'},
-    {'title': 'Toys', 'icon': 'https://cdn-icons-png.flaticon.com/512/616/616408.png'},
-    {'title': 'Beauty', 'icon': 'https://cdn-icons-png.flaticon.com/512/3425/3425740.png'},
-  ];
+  @override
+  State<DiscoverPage> createState() => _DiscoverPageState();
+}
 
-  final List<Gradient> borderGradients = const [
-    LinearGradient(colors: [Colors.red, Colors.orange]),
-    LinearGradient(colors: [Colors.blue, Colors.lightBlueAccent]),
-    LinearGradient(colors: [Colors.green, Colors.lightGreenAccent]),
-    LinearGradient(colors: [Colors.purple, Colors.deepPurpleAccent]),
-    LinearGradient(colors: [Colors.teal, Colors.cyanAccent]),
-    LinearGradient(colors: [Colors.pink, Colors.deepOrangeAccent]),
-  ];
+class _DiscoverPageState extends State<DiscoverPage> {
+  List<dynamic> filteredCategories = [];
+  List<dynamic> allCategories = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    final categoryProvider = Provider.of<CategoriesProvider>(context, listen: false);
+    if (categoryProvider.categories.isEmpty) {
+      Future.microtask(() => categoryProvider.loadCategories());
+    }
+
+    searchController.addListener(() {
+      onSearch();
+    });
+  }
+
+  final TextEditingController searchController = TextEditingController();
+
+  void onSearch() {
+    final query = searchController.text.trim().toLowerCase();
+    // final categories = Provider.of<CategoriesProvider>(context, listen: false).categories;
+    if (query.isEmpty) {
+      filteredCategories = List.from(allCategories);
+    } else {
+      filteredCategories = allCategories.where((cat) {
+        final name = (cat['name'] ?? '').toLowerCase();
+        return name.contains(query);
+      }).toList();
+    }
+
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
-    final TextEditingController searchController = TextEditingController();
-    final textTheme = Theme.of(context).textTheme;
-
-    void onSearch() {
-      final query = searchController.text.trim();
-      // TODO: Implement search
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Searching for "$query"...')));
-    }
-
     return Scaffold(
       appBar: AppBar(title: const Text('Discover')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           children: [
             // Search bar (same as before)
@@ -46,7 +61,7 @@ class DiscoverPage extends StatelessWidget {
                   child: TextField(
                     controller: searchController,
                     decoration: InputDecoration(
-                      hintText: 'Search Product',
+                      hintText: 'Search Category',
                       filled: true,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       border: OutlineInputBorder(
@@ -58,11 +73,11 @@ class DiscoverPage extends StatelessWidget {
                         ),
                         borderSide: BorderSide.none,
                       ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () => searchController.clear(),
-                        splashRadius: 20,
-                      ),
+                      // suffixIcon: IconButton(
+                      //   icon: const Icon(Icons.clear),
+                      //   onPressed: () => searchController.clear(),
+                      //   splashRadius: 20,
+                      // ),
                     ),
                     onSubmitted: (_) => onSearch(),
                   ),
@@ -93,73 +108,107 @@ class DiscoverPage extends StatelessWidget {
             const SizedBox(height: 12),
 
             Expanded(
-              child: GridView.builder(
-                itemCount: categories.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 3 / 3, // less tall, more compact
-                ),
-                itemBuilder: (context, index) {
-                  final category = categories[index];
-                  final gradient = borderGradients[index % borderGradients.length];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ProductsPage(categorySlug: "categorySlug", categoryName: category['title']),
-                        ),
+              child: Consumer<CategoriesProvider>(
+                builder: (context, provider, _) {
+                  if (provider.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  // Initialize lists if first load
+                  if (allCategories.isEmpty && provider.categories.isNotEmpty) {
+                    allCategories = provider.categories;
+                    filteredCategories = List.from(allCategories);
+                  }
+
+                  if (filteredCategories.isEmpty) {
+                    return const Center(child: Text("No categories found"));
+                  }
+
+                  return GridView.builder(
+                    itemCount: filteredCategories.length,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 8,
+                      crossAxisSpacing: 8,
+                      childAspectRatio: 1,
+                    ),
+                    itemBuilder: (context, index) {
+                      final category = filteredCategories[index];
+                      final gradient = AppColors.borderGradients[index % AppColors.borderGradients.length];
+
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => ProductsPage(categorySlug: category['slug'], categoryName: category['name']),
+                            ),
+                          );
+                        },
+                        child: CategoryCard(category: category, gradient: gradient),
                       );
                     },
-                    child: Card(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    height: 60,
-                                    child: Image.network(
-                                      category['icon'],
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (context, error, stackTrace) =>
-                                          const Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    category['title'],
-                                    style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          // Gradient bottom bar
-                          Container(
-                            height: 6,
-                            decoration: BoxDecoration(
-                              gradient: gradient,
-                              borderRadius: const BorderRadius.only(
-                                bottomLeft: Radius.circular(12),
-                                bottomRight: Radius.circular(12),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   );
                 },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CategoryCard extends StatelessWidget {
+  final Map<String, dynamic> category;
+  final Gradient gradient;
+  final VoidCallback? onTap;
+
+  const CategoryCard({super.key, required this.category, required this.gradient, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 0,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      height: 60,
+                      child: category['image'] != null && category['image'] != ''
+                          ? Image.network(
+                              category['image'],
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
+                            )
+                          : const Icon(Icons.category, size: 40, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      category['name'] ?? '',
+                      style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              height: 6,
+              decoration: BoxDecoration(
+                gradient: gradient,
+                borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(12), bottomRight: Radius.circular(12)),
               ),
             ),
           ],
