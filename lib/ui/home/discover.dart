@@ -138,12 +138,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
 
                       return GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ProductsPage(categorySlug: category['slug'], categoryName: category['name']),
-                            ),
-                          );
+                          Navigator.push(context, MaterialPageRoute(builder: (_) => ProductsPage(category: category)));
                         },
                         child: CategoryCard(category: category, gradient: gradient),
                       );

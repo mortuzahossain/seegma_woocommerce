@@ -5,6 +5,7 @@ import 'package:seegma_woocommerce/provider/home_provider.dart';
 import 'package:seegma_woocommerce/provider/slider_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:seegma_woocommerce/ui/common/product.dart';
+import 'package:seegma_woocommerce/ui/home/products.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -114,16 +115,21 @@ class _HomePageState extends State<HomePage> {
                       final cat = provider.categories[index];
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Column(
-                          children: [
-                            CircleAvatar(
-                              radius: 30,
-                              backgroundImage: cat['image'] != null && cat['image'] != "" ? NetworkImage(cat['image']) : null,
-                              child: cat['image'] == null || cat['image'] == "" ? Text(cat['name'][0]) : null,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(cat['name'] ?? '', style: Theme.of(context).textTheme.bodySmall),
-                          ],
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => ProductsPage(category: cat)));
+                          },
+                          child: Column(
+                            children: [
+                              CircleAvatar(
+                                radius: 30,
+                                backgroundImage: cat['image'] != null && cat['image'] != "" ? NetworkImage(cat['image']) : null,
+                                child: cat['image'] == null || cat['image'] == "" ? Text(cat['name'][0]) : null,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(cat['name'] ?? '', style: Theme.of(context).textTheme.bodySmall),
+                            ],
+                          ),
                         ),
                       );
                     },
