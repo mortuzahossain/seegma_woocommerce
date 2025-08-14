@@ -24,8 +24,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
-        // selectedItemColor: Colors.blue,
-        // unselectedItemColor: Colors.grey,
         onTap: (index) => setState(() => _currentIndex = index),
         items: [
           BottomNavigationBarItem(icon: FaIcon(FontAwesomeIcons.shop), label: 'Shop'),

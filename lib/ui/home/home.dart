@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:seegma_woocommerce/provider/slider_provider.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,35 +13,19 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
-
-  final List<String> sliderImages = [
-    'https://via.placeholder.com/600x300?text=Banner+1',
-    'https://via.placeholder.com/600x300?text=Banner+2',
-    'https://via.placeholder.com/600x300?text=Banner+3',
-  ];
+  @override
+  void initState() {
+    super.initState();
+    final sliderProvider = Provider.of<SliderProvider>(context, listen: false);
+    if (sliderProvider.sliderData.isEmpty) {
+      Future.microtask(() => sliderProvider.loadSliderData());
+    }
+  }
 
   final List<Map<String, dynamic>> products = [
-    {
-      "name": "Product 1",
-      "image": "https://via.placeholder.com/200x200?text=Product+1",
-      "price": 200,
-      "salePrice": 150,
-      "onSale": true,
-    },
-    {
-      "name": "Product 2",
-      "image": "https://via.placeholder.com/200x200?text=Product+2",
-      "price": 100,
-      "salePrice": null,
-      "onSale": false,
-    },
-    {
-      "name": "Product 3",
-      "image": "https://via.placeholder.com/200x200?text=Product+3",
-      "price": 300,
-      "salePrice": 250,
-      "onSale": true,
-    },
+    {"name": "Product 1", "image": "https://placehold.co/600x400", "price": 200, "salePrice": 150, "onSale": true},
+    {"name": "Product 2", "image": "https://placehold.co/600x400", "price": 100, "salePrice": null, "onSale": false},
+    {"name": "Product 3", "image": "https://placehold.co/600x400", "price": 300, "salePrice": 250, "onSale": true},
   ];
 
   @override
@@ -57,37 +43,57 @@ class _HomePageState extends State<HomePage> {
             SizedBox(height: 10),
 
             /// Image Slider
-            CarouselSlider(
-              options: CarouselOptions(
-                height: 180,
-                autoPlay: true,
-                enlargeCenterPage: true,
-                onPageChanged: (index, reason) {
-                  setState(() => _currentIndex = index);
-                },
-              ),
-              items: sliderImages.map((url) {
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(url, fit: BoxFit.cover, width: double.infinity),
-                );
-              }).toList(),
-            ),
+            Consumer<SliderProvider>(
+              builder: (context, provider, _) {
+                if (provider.isLoading) {
+                  return const SizedBox(height: 180, child: Center(child: CircularProgressIndicator()));
+                }
 
-            /// Indicator
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: sliderImages.asMap().entries.map((entry) {
-                return Container(
-                  width: 8,
-                  height: 8,
-                  margin: const EdgeInsets.symmetric(horizontal: 3, vertical: 8),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _currentIndex == entry.key ? Colors.blue : Colors.grey,
-                  ),
+                if (provider.sliderData.isEmpty) {
+                  return const SizedBox(height: 180, child: Center(child: Text("No slider data found")));
+                }
+
+                return Column(
+                  children: [
+                    CarouselSlider(
+                      options: CarouselOptions(
+                        height: 180,
+                        autoPlay: true,
+                        enlargeCenterPage: true,
+                        onPageChanged: (index, reason) {
+                          setState(() => _currentIndex = index);
+                        },
+                      ),
+                      items: provider.sliderData.map((item) {
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.network(
+                            item['image_url'], // <-- use correct key
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                          ),
+                        );
+                      }).toList(),
+                    ),
+
+                    /// Indicator
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: provider.sliderData.asMap().entries.map((entry) {
+                        return Container(
+                          width: 8,
+                          height: 8,
+                          margin: const EdgeInsets.symmetric(horizontal: 3, vertical: 8),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: _currentIndex == entry.key ? Colors.blue : Colors.grey,
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
                 );
-              }).toList(),
+              },
             ),
 
             /// Categories title
