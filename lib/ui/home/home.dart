@@ -92,8 +92,7 @@ class _HomePageState extends State<HomePage> {
             ),
 
             /// Categories title
-            Container(
-              margin: const EdgeInsets.all(12),
+            SizedBox(
               height: 100,
               child: Consumer<HomepageProvider>(
                 builder: (context, provider, _) {
@@ -152,7 +151,7 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         // Section title
                         Padding(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                           child: Text(section['title'] ?? '', style: Theme.of(context).textTheme.titleLarge),
                         ),
 
