@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:seegma_woocommerce/provider/home_provider.dart';
 import 'package:seegma_woocommerce/provider/slider_provider.dart';
 import 'package:seegma_woocommerce/ui/home/dashboard.dart';
 import 'package:seegma_woocommerce/utils/themes.dart';
@@ -9,7 +10,10 @@ void main() {
 
   runApp(
     MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => SliderProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => SliderProvider()),
+        ChangeNotifierProvider(create: (_) => HomepageProvider()),
+      ],
       child: const MainApp(),
     ),
   );
