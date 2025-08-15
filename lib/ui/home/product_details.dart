@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
@@ -17,13 +16,23 @@ class ProductDetailsPage extends StatefulWidget {
   State<ProductDetailsPage> createState() => _ProductDetailsPageState();
 }
 
-class _ProductDetailsPageState extends State<ProductDetailsPage> {
+class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProviderStateMixin {
+  late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ProductDetailsProvider>(context, listen: false).setProductId(widget.product['id'].toString());
     });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -32,123 +41,124 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
       appBar: AppBar(title: Text(widget.product["name"] ?? '')),
       body: Consumer<ProductDetailsProvider>(
         builder: (context, provider, _) {
-          if (provider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (provider.hasError) {
-            return const Center(child: Text('Failed to load product'));
-          }
+          if (provider.isLoading) return const Center(child: CircularProgressIndicator());
+          if (provider.hasError) return const Center(child: Text('Failed to load product'));
 
           final product = provider.product;
-          if (product == null) {
-            return const Center(child: Text('No product found'));
-          }
+          if (product == null) return const Center(child: Text('No product found'));
+          // final additionalDetails = (product['additional_details'] is Map)
+          //     ? Map<String, dynamic>.from(product['additional_details'])
+          //     : <String, dynamic>{};
+          // final purchasable = product['purchasable'] ?? false;
+          // final inStock = (product['stock_status'] ?? '') == 'instock';
+          // final virtualTryon = product['virtual_tryon'] ?? false;
 
-          final purchasable = product['purchasable'] ?? false;
-          final inStock = (product['stock_status'] ?? '') == 'instock';
-          final virtualTryon = product['virtual_tryon'] ?? false;
-          final price = product['price'] ?? '';
-          final salePrice = product['sale_price'] ?? '';
-          final imageUrl = product['image'] ?? '';
-          final name = product['name'] ?? '';
-          final shortDescription = product['short_description'] ?? '';
-          final additionalDetails = (product['additional_details'] is Map)
-              ? Map<String, dynamic>.from(product['additional_details'])
-              : <String, dynamic>{};
-
-          return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                buildImageSlider(product),
-
-                const SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(name, style: Theme.of(context).textTheme.titleLarge),
-                ),
-
-                const SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    children: [
-                      if (salePrice != null && salePrice.isNotEmpty)
-                        Text(
-                          '\$$salePrice',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red, fontSize: 18),
-                        ),
-                      if (salePrice != null && salePrice.isNotEmpty) const SizedBox(width: 8),
-                      Text(
-                        '\$$price',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: salePrice != null && salePrice.isNotEmpty ? Colors.grey : Colors.black,
-                          decoration: salePrice != null && salePrice.isNotEmpty
-                              ? TextDecoration.lineThrough
-                              : TextDecoration.none,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(shortDescription, style: Theme.of(context).textTheme.bodyMedium),
-                ),
-
-                const SizedBox(height: 12),
-                if (additionalDetails.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: additionalDetails.entries.map((e) {
-                        final valueList = (e.value as List).join(', ');
-                        return Text('${e.key}: $valueList', style: Theme.of(context).textTheme.bodyMedium);
-                      }).toList(),
+          return NestedScrollView(
+            headerSliverBuilder: (_, __) => [
+              SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    buildImageSlider(product),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(product['name'] ?? '', style: Theme.of(context).textTheme.titleLarge),
                     ),
-                  ),
-
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    children: [
-                      if (virtualTryon)
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            // handle virtual try-on
-                          },
-                          icon: const FaIcon(FontAwesomeIcons.eye, size: 16),
-                          label: const Text('Virtual Try-On'),
-                        ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: purchasable && inStock
-                              ? () {
-                                  // handle add to cart
-                                }
-                              : null,
-                          icon: const FaIcon(FontAwesomeIcons.cartPlus, size: 16),
-                          style: ElevatedButton.styleFrom(backgroundColor: purchasable && inStock ? Colors.blue : Colors.grey),
-                          label: const Text('Add to Cart'),
-                        ),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Row(
+                        children: [
+                          if (product["on_sale"] == true && (product["sale_price"]?.toString().isNotEmpty ?? false))
+                            Text("\$${product["sale_price"]}", style: Theme.of(context).textTheme.titleLarge),
+                          if (product["on_sale"] == true && (product["sale_price"]?.toString().isNotEmpty ?? false))
+                            const SizedBox(width: 5),
+                          Text(
+                            "\$${(product["regular_price"]?.toString().isNotEmpty ?? false) ? product["regular_price"] : product["price"] ?? ''}",
+                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              color: (product["on_sale"] == true) ? Colors.grey : Colors.black,
+                              decoration:
+                                  (product["on_sale"] == true && (product["regular_price"]?.toString().isNotEmpty ?? false))
+                                  ? TextDecoration.lineThrough
+                                  : TextDecoration.none,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(product['short_description'] ?? '', style: Theme.of(context).textTheme.bodyMedium),
+                    ),
+                    const SizedBox(height: 12),
+                    // TabBar
+                    TabBar(
+                      controller: _tabController,
+                      labelColor: Colors.blue,
+                      unselectedLabelColor: Colors.grey,
+                      indicatorColor: Colors.blue,
+                      // isScrollable: true,
+                      tabs: const [
+                        Tab(text: 'Description'),
+                        Tab(text: 'Additional Details'),
+                        Tab(text: 'Reviews'),
+                      ],
+                    ),
+                  ],
                 ),
-
-                const SizedBox(height: 20),
-                // Optional: Reviews or Related Products can go here
+              ),
+            ],
+            body: TabBarView(
+              controller: _tabController,
+              children: [
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(product['description'] ?? 'No description available'),
+                ),
+                buildAdditionalDetails(product),
+                SingleChildScrollView(padding: const EdgeInsets.all(12), child: buildReviewsSection(product)),
               ],
             ),
           );
         },
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            children: [
+              if ((Provider.of<ProductDetailsProvider>(context, listen: false).product?['virtual_tryon'] ?? false))
+                ElevatedButton.icon(
+                  onPressed: () {},
+                  icon: const FaIcon(FontAwesomeIcons.eye, size: 16),
+                  label: const Text('Virtual Try-On'),
+                ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed:
+                      (Provider.of<ProductDetailsProvider>(context, listen: false).product?['purchasable'] ?? false) &&
+                          (Provider.of<ProductDetailsProvider>(context, listen: false).product?['stock_status'] ?? '') ==
+                              'instock'
+                      ? () {}
+                      : null,
+                  icon: const FaIcon(FontAwesomeIcons.cartPlus, size: 16),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        (Provider.of<ProductDetailsProvider>(context, listen: false).product?['purchasable'] ?? false) &&
+                            (Provider.of<ProductDetailsProvider>(context, listen: false).product?['stock_status'] ?? '') ==
+                                'instock'
+                        ? Colors.blue
+                        : Colors.grey,
+                  ),
+                  label: const Text('Add to Cart'),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -244,7 +254,6 @@ class _FullScreenImageGallery extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
       body: Stack(
         children: [
           PhotoViewGallery.builder(
@@ -271,4 +280,137 @@ class _FullScreenImageGallery extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget buildAdditionalDetails(Map<String, dynamic> product) {
+  final additionalDetails = (product['additional_details'] is Map)
+      ? Map<String, dynamic>.from(product['additional_details'])
+      : <String, dynamic>{};
+
+  if (additionalDetails.isEmpty) {
+    return const Padding(padding: EdgeInsets.all(12), child: Text('No additional details'));
+  }
+
+  return Padding(
+    padding: const EdgeInsets.all(12),
+    child: Table(
+      columnWidths: const {0: IntrinsicColumnWidth(), 1: FlexColumnWidth()},
+      border: TableBorder.all(color: Colors.grey.shade300, width: 1),
+      children: additionalDetails.entries.map((entry) {
+        final key = entry.key;
+        final value = entry.value;
+        return TableRow(
+          decoration: BoxDecoration(color: Colors.grey.shade100),
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(key, style: const TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            Padding(padding: const EdgeInsets.all(8.0), child: Text((value is List) ? value.join(', ') : value.toString())),
+          ],
+        );
+      }).toList(),
+    ),
+  );
+}
+
+Widget buildReviewsSection(Map<String, dynamic> product) {
+  bool reviewsAllowed = product['reviews_allowed'] ?? false;
+  List<dynamic> lastReviews = product['last_reviews'] ?? [];
+
+  if (!reviewsAllowed) return const SizedBox();
+
+  final reviewController = TextEditingController();
+  double selectedRating = 0;
+
+  return StatefulBuilder(
+    builder: (context, setState) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 20),
+          // --- Existing Reviews ---
+          if (lastReviews.isNotEmpty) ...[
+            const Text("Customer Reviews", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            ...lastReviews.map((review) {
+              return Card(
+                elevation: 1,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                margin: const EdgeInsets.only(bottom: 12),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // --- Author + Date Row ---
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(review['author'], style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+                          Text(review['date'], style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+
+                      // --- Rating stars ---
+                      Row(
+                        children: List.generate(
+                          5,
+                          (index) =>
+                              Icon(index < review['rating'] ? Icons.star : Icons.star_border, color: Colors.orange, size: 18),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
+                      // --- Review Content ---
+                      Text(review['content'], style: const TextStyle(fontSize: 14, height: 1.4)),
+                    ],
+                  ),
+                ),
+              );
+            }),
+            const SizedBox(height: 16),
+          ],
+
+          // --- Add Review Form ---
+          const Text("Add a Review", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          const Text("Your Rating *"),
+          Row(
+            children: List.generate(
+              5,
+              (index) => IconButton(
+                icon: Icon(index < selectedRating ? Icons.star : Icons.star_border, color: Colors.orange),
+                onPressed: () {
+                  setState(() => selectedRating = index + 1.0);
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text("Your Review *"),
+          TextField(
+            controller: reviewController,
+            maxLines: 3,
+            decoration: const InputDecoration(border: OutlineInputBorder(), hintText: "Write your review here"),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: () {
+              if (selectedRating == 0 || reviewController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please add rating and review")));
+                return;
+              }
+              // TODO: Call API to submit review
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Review submitted successfully!")));
+              reviewController.clear();
+              setState(() => selectedRating = 0);
+            },
+            child: const Text("Submit"),
+          ),
+        ],
+      );
+    },
+  );
 }
