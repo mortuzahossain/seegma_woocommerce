@@ -121,13 +121,19 @@ class _HomePageState extends State<HomePage> {
                           },
                           child: Column(
                             children: [
-                              CircleAvatar(
-                                radius: 30,
-                                backgroundImage: cat['image'] != null && cat['image'] != "" ? NetworkImage(cat['image']) : null,
-                                child: cat['image'] == null || cat['image'] == "" ? Text(cat['name'][0]) : null,
+                              Material(
+                                elevation: 1,
+                                shape: const CircleBorder(),
+                                clipBehavior: Clip.antiAlias,
+                                child: CircleAvatar(
+                                  radius: 30,
+                                  backgroundImage: cat['image'] != null && cat['image'] != "" ? NetworkImage(cat['image']) : null,
+                                  child: cat['image'] == null || cat['image'] == "" ? Text(cat['name'][0]) : null,
+                                ),
                               ),
-                              const SizedBox(height: 4),
-                              Text(cat['name'] ?? '', style: Theme.of(context).textTheme.bodySmall),
+
+                              const SizedBox(height: 6),
+                              Text(cat['name'] ?? '', style: Theme.of(context).textTheme.bodyMedium),
                             ],
                           ),
                         ),

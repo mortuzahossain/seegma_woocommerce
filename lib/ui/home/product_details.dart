@@ -1,3 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
@@ -48,17 +53,15 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           final imageUrl = product['image'] ?? '';
           final name = product['name'] ?? '';
           final shortDescription = product['short_description'] ?? '';
-          final additionalDetails = product['additional_details'] as Map<String, dynamic>? ?? {};
+          final additionalDetails = (product['additional_details'] is Map)
+              ? Map<String, dynamic>.from(product['additional_details'])
+              : <String, dynamic>{};
 
           return SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Product Image
-                if (imageUrl.isNotEmpty)
-                  Image.network(imageUrl, width: double.infinity, height: 250, fit: BoxFit.cover)
-                else
-                  Container(height: 250, color: Colors.grey.shade200, child: const Icon(Icons.image_not_supported, size: 80)),
+                buildImageSlider(product),
 
                 const SizedBox(height: 12),
                 Padding(
@@ -146,6 +149,125 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+Widget buildImageSlider(Map<String, dynamic> product, {double height = 250}) {
+  final List<dynamic> imagesData = product['images'] ?? [];
+  final List<String> imageUrls = imagesData.map<String>((img) => img['src'] ?? '').where((url) => url.isNotEmpty).toList();
+
+  if (imageUrls.isEmpty) {
+    return Container(height: height, color: Colors.grey.shade200, child: const Icon(Icons.image_not_supported, size: 80));
+  }
+
+  return _ImageSlider(imageUrls: imageUrls, height: height);
+}
+
+class _ImageSlider extends StatefulWidget {
+  final List<String> imageUrls;
+  final double height;
+
+  const _ImageSlider({required this.imageUrls, required this.height});
+
+  @override
+  State<_ImageSlider> createState() => _ImageSliderState();
+}
+
+class _ImageSliderState extends State<_ImageSlider> {
+  final PageController _pageController = PageController();
+  int _currentIndex = 0;
+
+  void _openFullScreen(int initialIndex) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _FullScreenImageGallery(images: widget.imageUrls, initialIndex: initialIndex),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: widget.height,
+          child: PageView.builder(
+            controller: _pageController,
+            itemCount: widget.imageUrls.length,
+            onPageChanged: (index) {
+              setState(() => _currentIndex = index);
+            },
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                onTap: () => _openFullScreen(index),
+                child: CachedNetworkImage(
+                  imageUrl: widget.imageUrls[index],
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                  errorWidget: (context, url, error) => const Icon(Icons.error, size: 40),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            widget.imageUrls.length,
+            (index) => Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              width: _currentIndex == index ? 10 : 8,
+              height: _currentIndex == index ? 10 : 8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _currentIndex == index ? Colors.blue : Colors.grey.shade400,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FullScreenImageGallery extends StatelessWidget {
+  final List<String> images;
+  final int initialIndex;
+
+  const _FullScreenImageGallery({required this.images, required this.initialIndex});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          PhotoViewGallery.builder(
+            itemCount: images.length,
+            pageController: PageController(initialPage: initialIndex),
+            builder: (context, index) {
+              return PhotoViewGalleryPageOptions(
+                imageProvider: CachedNetworkImageProvider(images[index]),
+                minScale: PhotoViewComputedScale.contained,
+                maxScale: PhotoViewComputedScale.covered * 2,
+              );
+            },
+            backgroundDecoration: const BoxDecoration(color: Colors.black),
+          ),
+          Positioned(
+            top: 40,
+            left: 20,
+            child: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white, size: 30),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+        ],
       ),
     );
   }
