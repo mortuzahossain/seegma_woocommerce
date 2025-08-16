@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:seegma_woocommerce/ui/home/dashboard.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -48,7 +49,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     _controller.animateToPage(_pages.length - 1, duration: Duration(milliseconds: 300), curve: Curves.ease);
   }
 
-  void _finish() {
+  void _finish() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('onboarding_shown', true);
+
     Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => DashboardScreen()));
   }
 

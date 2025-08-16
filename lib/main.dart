@@ -8,7 +8,9 @@ import 'package:seegma_woocommerce/provider/product_details_provider.dart';
 import 'package:seegma_woocommerce/provider/slider_provider.dart';
 import 'package:seegma_woocommerce/provider/tryon_provider.dart';
 import 'package:seegma_woocommerce/ui/home/dashboard.dart';
+import 'package:seegma_woocommerce/ui/others/onboarding.dart';
 import 'package:seegma_woocommerce/utils/themes.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,6 +34,11 @@ void main() {
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
+  Future<bool> _checkOnboardingShown() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('onboarding_shown') ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -39,7 +46,18 @@ class MainApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
-      home: DashboardScreen(),
+      home: FutureBuilder<bool>(
+        future: _checkOnboardingShown(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            // Splash / loading screen
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          }
+
+          final shown = snapshot.data ?? false;
+          return shown ? const DashboardScreen() : const OnboardingScreen();
+        },
+      ),
     );
   }
 }
