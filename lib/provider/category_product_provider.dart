@@ -75,10 +75,10 @@ class CategoryProductsProvider extends ChangeNotifier {
       totalPages = 1;
     }
 
-    if (page == 1 && !refresh) {
-      final cacheLoaded = await _loadCache();
-      if (cacheLoaded) return; // use cached data
-    }
+    // if (page == 1 && !refresh) {
+    //   final cacheLoaded = await _loadCache();
+    //   if (cacheLoaded) return; // use cached data
+    // }
 
     if (isLoading || isLoadingMore || page > totalPages) return;
 

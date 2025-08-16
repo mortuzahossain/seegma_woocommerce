@@ -22,7 +22,7 @@ class ProductDetailsPage extends StatefulWidget {
 
 class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProviderStateMixin {
   late TabController _tabController;
-
+  int _quantity = 1;
   @override
   void initState() {
     super.initState();
@@ -165,40 +165,65 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
         },
       ),
       bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(
-            children: [
-              if ((Provider.of<ProductDetailsProvider>(context, listen: false).product?['virtual_tryon'] ?? false))
-                ElevatedButton.icon(
-                  onPressed: () {
-                    _showTryOnBottomSheet(context, widget.product['id']);
-                  },
-                  icon: const FaIcon(FontAwesomeIcons.eye, size: 16),
-                  label: const Text('Virtual Try-On'),
-                ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed:
-                      (Provider.of<ProductDetailsProvider>(context, listen: true).product?['purchasable'] ?? false) &&
-                          (Provider.of<ProductDetailsProvider>(context, listen: true).product?['stock_status'] ?? '') == 'instock'
-                      ? () {}
-                      : null,
-                  icon: const FaIcon(FontAwesomeIcons.cartPlus, size: 16),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        (Provider.of<ProductDetailsProvider>(context, listen: true).product?['purchasable'] ?? false) &&
-                            (Provider.of<ProductDetailsProvider>(context, listen: true).product?['stock_status'] ?? '') ==
-                                'instock'
-                        ? Colors.blue
-                        : Colors.grey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Virtual Try-On row (if available)
+            if ((Provider.of<ProductDetailsProvider>(context, listen: false).product?['virtual_tryon'] ?? false))
+              Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      _showTryOnBottomSheet(context, widget.product['id']);
+                    },
+                    icon: const FaIcon(FontAwesomeIcons.eye, size: 16),
+                    label: const Text('Virtual Try-On'),
                   ),
-                  label: const Text('Add to Cart'),
                 ),
               ),
-            ],
-          ),
+
+            // Add to Cart + Quantity row
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const FaIcon(FontAwesomeIcons.minus),
+                    onPressed: () {
+                      if (_quantity > 1) setState(() => _quantity--);
+                    },
+                  ),
+                  Text(_quantity.toString(), style: const TextStyle(fontSize: 18)),
+                  IconButton(icon: const FaIcon(FontAwesomeIcons.plus), onPressed: () => setState(() => _quantity++)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed:
+                          (Provider.of<ProductDetailsProvider>(context, listen: true).product?['purchasable'] ?? false) &&
+                              (Provider.of<ProductDetailsProvider>(context, listen: true).product?['stock_status'] ?? '') ==
+                                  'instock'
+                          ? () {
+                              // Add to cart with _quantity
+                            }
+                          : null,
+                      icon: const FaIcon(FontAwesomeIcons.cartPlus, size: 16),
+                      label: const Text('Add to Cart'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            (Provider.of<ProductDetailsProvider>(context, listen: true).product?['purchasable'] ?? false) &&
+                                (Provider.of<ProductDetailsProvider>(context, listen: true).product?['stock_status'] ?? '') ==
+                                    'instock'
+                            ? Colors.blue
+                            : Colors.grey,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -323,7 +348,7 @@ class _ImageSliderState extends State<_ImageSlider> {
                 onTap: () => _openFullScreen(index),
                 child: CachedNetworkImage(
                   imageUrl: widget.imageUrls[index],
-                  fit: BoxFit.cover,
+                  fit: BoxFit.scaleDown,
                   width: double.infinity,
                   placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
                   errorWidget: (context, url, error) => const Icon(Icons.error, size: 40),
@@ -333,21 +358,22 @@ class _ImageSliderState extends State<_ImageSlider> {
           ),
         ),
         const SizedBox(height: 8),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            widget.imageUrls.length,
-            (index) => Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              width: _currentIndex == index ? 10 : 8,
-              height: _currentIndex == index ? 10 : 8,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _currentIndex == index ? Colors.blue : Colors.grey.shade400,
+        if (widget.imageUrls.length > 1)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(
+              widget.imageUrls.length,
+              (index) => Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: _currentIndex == index ? 10 : 8,
+                height: _currentIndex == index ? 10 : 8,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _currentIndex == index ? Colors.blue : Colors.grey.shade400,
+                ),
               ),
             ),
           ),
-        ),
       ],
     );
   }
@@ -403,12 +429,12 @@ Widget buildAdditionalDetails(Map<String, dynamic> product) {
     padding: const EdgeInsets.all(12),
     child: Table(
       columnWidths: const {0: IntrinsicColumnWidth(), 1: FlexColumnWidth()},
-      border: TableBorder.all(color: Colors.grey.shade300, width: 1),
+      border: TableBorder.all(color: Colors.grey, width: 1),
       children: additionalDetails.entries.map((entry) {
         final key = entry.key;
         final value = entry.value;
         return TableRow(
-          decoration: BoxDecoration(color: Colors.grey.shade100),
+          // decoration: BoxDecoration(color: Colors.grey.shade100),
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),

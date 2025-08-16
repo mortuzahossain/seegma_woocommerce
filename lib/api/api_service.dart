@@ -1,14 +1,20 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   static const String baseUrl = 'http://wordpress.test/wp-json';
 
   static Future<dynamic> get(String endpoint) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token') ?? '';
       final url = Uri.parse('$baseUrl$endpoint');
-      final response = await http.get(url);
+      final response = await http.get(
+        url,
+        headers: {'Content-Type': 'application/json', if (token.isNotEmpty) 'Authorization': 'Bearer $token'},
+      );
       if (response.statusCode >= 200 && response.statusCode < 300) {
         final data = json.decode(response.body);
         return data;
