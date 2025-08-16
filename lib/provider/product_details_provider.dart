@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ProductDetailsProvider extends ChangeNotifier {
   String? _productId;
   Map<String, dynamic>? product;
+  List<Map<String, dynamic>> variations = [];
 
   bool isLoading = false;
   bool hasError = false;
@@ -30,7 +31,7 @@ class ProductDetailsProvider extends ChangeNotifier {
     }
 
     // Try load from cache first
-    if (!refresh && await _loadCache()) return;
+    // if (!refresh && await _loadCache()) return;
 
     isLoading = true;
     notifyListeners();
@@ -38,6 +39,8 @@ class ProductDetailsProvider extends ChangeNotifier {
     try {
       final response = await ApiService.get('/hh/v1/product/$_productId');
       product = response;
+      variations = (response['variations'] as List?)?.map((v) => Map<String, dynamic>.from(v)).toList() ?? [];
+
       hasError = false;
       await _saveCache();
     } catch (e) {
@@ -74,7 +77,25 @@ class ProductDetailsProvider extends ChangeNotifier {
     if (now - timestamp > cacheDuration) return false;
 
     product = data['product'] as Map<String, dynamic>?;
+    variations = (product?['variations'] as List?)?.map((v) => Map<String, dynamic>.from(v)).toList() ?? [];
+
     notifyListeners();
     return true;
+  }
+
+  int? findVariationId(Map<String, String> selectedAttrs) {
+    for (var variation in variations) {
+      final attrs = variation['attributes'] as Map<String, dynamic>;
+      bool matches = true;
+
+      selectedAttrs.forEach((key, value) {
+        if (attrs[key]?['slug'] != value.toLowerCase()) {
+          matches = false;
+        }
+      });
+
+      if (matches) return variation['id'];
+    }
+    return null;
   }
 }

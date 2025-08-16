@@ -1,7 +1,11 @@
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:seegma_woocommerce/api/api_service.dart';
+import 'package:seegma_woocommerce/utils/loading_dialog.dart';
 import 'package:seegma_woocommerce/utils/login_helper.dart';
+import 'package:seegma_woocommerce/utils/snackbar.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:flutter/material.dart';
@@ -37,6 +41,152 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  void _addToCart(BuildContext context) async {
+    // print(Provider.of<ProductDetailsProvider>(context, listen: false).product);
+
+    var product = Provider.of<ProductDetailsProvider>(context, listen: false).product;
+    if (product == null) return;
+    bool haveVariation = false;
+    Map<String, dynamic>? variation;
+    if (Provider.of<ProductDetailsProvider>(context, listen: false).variations.isNotEmpty) {
+      variation = await _showVariationSelector(context, product);
+      haveVariation = true;
+    }
+    print({
+      "id": widget.product['id'],
+      "quantity": _quantity,
+      if (variation != null && variation.isNotEmpty) "variation": variation['attributes'],
+    });
+
+    LoadingDialog.show(context);
+    try {
+      final response = await ApiService.post(
+        '/cocart/v2/cart/add-item',
+        body: {
+          "id": widget.product['id'].toString(),
+          "quantity": _quantity.toString(),
+          if (variation != null && variation.isNotEmpty) "variation": variation['attributes'],
+        },
+      );
+
+      if (!mounted) return;
+      LoadingDialog.hide(context);
+      showAwesomeSnackbar(context: context, type: ContentType.success, title: 'Successful!', message: "Added to cart");
+    } catch (e) {
+      final message = e is Exception ? e.toString().replaceFirst('Exception:', '') : 'Something went wrong';
+      final RegExp exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
+      String plainText = message.replaceAll(exp, '').trim();
+      if (plainText.startsWith('Error:')) {
+        plainText = plainText.replaceFirst('Error:', '').trim();
+      }
+      if (!mounted) return;
+      LoadingDialog.hide(context);
+      showAwesomeSnackbar(context: context, type: ContentType.failure, title: 'Failed!', message: plainText);
+    }
+  }
+
+  Future<Map<String, dynamic>?> _showVariationSelector(BuildContext rootContext, Map<String, dynamic> product) {
+    final details = Map<String, dynamic>.from(product['additional_details'] ?? {});
+    final selections = <String, String>{}; // stores user choices
+
+    return showModalBottomSheet(
+      context: rootContext,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (context) {
+        return SafeArea(
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              return SizedBox(
+                width: double.infinity,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("Select Options", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 12),
+                      ...details.entries.map((entry) {
+                        final attrName = entry.key;
+                        final values = List<Map<String, dynamic>>.from(entry.value);
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(attrName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            Wrap(
+                              spacing: 8,
+                              children: values.map((v) {
+                                final name = v['name'];
+                                final slug = v['slug'];
+                                final isSelected = selections[attrName] == slug;
+
+                                return ChoiceChip(
+                                  label: Text(name),
+                                  selected: isSelected,
+                                  onSelected: (_) {
+                                    setState(() {
+                                      selections[attrName] = slug;
+                                    });
+                                  },
+                                );
+                              }).toList(),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+                        );
+                      }),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            if (selections.length < details.length) {
+                              showDialog(
+                                context: context,
+                                useRootNavigator: true,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text("Incomplete Selection"),
+                                    content: const Text("Please select all options before adding to cart."),
+                                    actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text("OK"))],
+                                  );
+                                },
+                              );
+                              return;
+                            }
+                            final provider = Provider.of<ProductDetailsProvider>(context, listen: false);
+                            final variationId = provider.findVariationId(selections);
+
+                            if (variationId != null) {
+                              final data = {
+                                "variation_id": variationId,
+                                "attributes": selections.map((k, v) => MapEntry("attribute_pa_${k.toLowerCase()}", v)),
+                              };
+
+                              Navigator.pop(context, data);
+                            } else {
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(const SnackBar(content: Text("Please select valid options")));
+                            }
+                          },
+                          icon: const Icon(Icons.add_shopping_cart),
+                          label: const Text("Add to Cart"),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -205,7 +355,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
                               (Provider.of<ProductDetailsProvider>(context, listen: true).product?['stock_status'] ?? '') ==
                                   'instock'
                           ? () {
-                              // Add to cart with _quantity
+                              _addToCart(context);
                             }
                           : null,
                       icon: const FaIcon(FontAwesomeIcons.cartPlus, size: 16),
@@ -433,14 +583,25 @@ Widget buildAdditionalDetails(Map<String, dynamic> product) {
       children: additionalDetails.entries.map((entry) {
         final key = entry.key;
         final value = entry.value;
+
+        String displayValue = '';
+        if (value is List) {
+          // Extract "name" field if available
+          displayValue = value
+              .map((item) => (item is Map<String, dynamic>) ? (item['name'] ?? '') : item.toString())
+              .where((name) => name.isNotEmpty)
+              .join(', ');
+        } else {
+          displayValue = value.toString();
+        }
+
         return TableRow(
-          // decoration: BoxDecoration(color: Colors.grey.shade100),
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(key, style: const TextStyle(fontWeight: FontWeight.bold)),
             ),
-            Padding(padding: const EdgeInsets.all(8.0), child: Text((value is List) ? value.join(', ') : value.toString())),
+            Padding(padding: const EdgeInsets.all(8.0), child: Text(displayValue)),
           ],
         );
       }).toList(),

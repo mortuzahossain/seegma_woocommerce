@@ -36,8 +36,11 @@ class ApiService {
 
   static Future<dynamic> post(String endpoint, {required Map<String, dynamic> body, Map<String, String>? headers}) async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token') ?? '';
+
       final url = Uri.parse('$baseUrl$endpoint');
-      final defaultHeaders = {'Content-Type': 'application/json'};
+      final defaultHeaders = {'Content-Type': 'application/json', if (token.isNotEmpty) 'Authorization': 'Bearer $token'};
       final allHeaders = {...defaultHeaders, ...?headers};
 
       final response = await http.post(url, headers: allHeaders, body: json.encode(body));
