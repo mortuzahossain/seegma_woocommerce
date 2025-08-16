@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:seegma_woocommerce/utils/login_helper.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -40,7 +42,43 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.product["name"] ?? '')),
+      appBar: AppBar(
+        title: Text(widget.product["name"] ?? ''),
+        centerTitle: false,
+        actions: [
+          IconButton(
+            icon: const FaIcon(FontAwesomeIcons.shareFromSquare),
+            onPressed: () {
+              final name = widget.product["name"] ?? "Product";
+              final url = widget.product["url"] ?? "";
+              SharePlus.instance.share(ShareParams(text: "$name\n$url", title: "Share - ($name)"));
+            },
+          ),
+
+          // Favorite toggle
+          IconButton(
+            icon: FaIcon(
+              widget.product['is_favorite'] ? FontAwesomeIcons.solidHeart : FontAwesomeIcons.heart,
+              color: widget.product['is_favorite'] ? Colors.red : null,
+            ),
+            onPressed: () {
+              setState(() {
+                // isFav = !isFav;
+              });
+            },
+          ),
+
+          IconButton(
+            icon: const FaIcon(FontAwesomeIcons.cartShopping),
+            onPressed: () async {
+              var isLoggedIn = await ensureLoggedIn(context);
+              if (isLoggedIn) {
+                // call go to cart
+              }
+            },
+          ),
+        ],
+      ),
       body: Consumer<ProductDetailsProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading) return const Center(child: CircularProgressIndicator());
