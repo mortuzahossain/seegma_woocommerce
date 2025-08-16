@@ -1,8 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:seegma_woocommerce/provider/cart_provider.dart';
 
 class CheckoutPage extends StatefulWidget {
-  final Map<String, dynamic>? cart;
-  const CheckoutPage({super.key, this.cart});
+  const CheckoutPage({super.key});
 
   @override
   State<CheckoutPage> createState() => _CheckoutPageState();
@@ -11,41 +14,95 @@ class CheckoutPage extends StatefulWidget {
 class _CheckoutPageState extends State<CheckoutPage> {
   final _shippingFormKey = GlobalKey<FormState>();
   final _billingFormKey = GlobalKey<FormState>();
+  // Controllers for shipping
+  late TextEditingController shippingFirstName;
+  late TextEditingController shippingLastName;
+  late TextEditingController shippingCountry;
+  late TextEditingController shippingAddress1;
+  late TextEditingController shippingAddress2;
+  late TextEditingController shippingCity;
+  late TextEditingController shippingState;
+  late TextEditingController shippingPostcode;
+  late TextEditingController shippingPhone;
+
+  // Controllers for billing
+  late TextEditingController billingFirstName;
+  late TextEditingController billingLastName;
+  late TextEditingController billingCountry;
+  late TextEditingController billingAddress1;
+  late TextEditingController billingAddress2;
+  late TextEditingController billingCity;
+  late TextEditingController billingState;
+  late TextEditingController billingPostcode;
+  late TextEditingController billingPhone;
+
   final TextEditingController _couponController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
 
-  bool _sameAsShipping = true;
-  String _selectedShippingOption = 'Flat rate';
-  double _shippingCost = 100.0;
+  Map<String, dynamic>? cart = {};
 
-  // shipping options (can be dynamic)
-  final List<Map<String, dynamic>> _shippingOptions = [
-    {'name': 'Flat rate', 'cost': 100.0},
-    {'name': 'Express delivery', 'cost': 150.0},
-    {'name': 'Free shipping', 'cost': 0.0},
-  ];
+  @override
+  void initState() {
+    super.initState();
+
+    // --- Initialize all controllers empty ---
+    shippingFirstName = TextEditingController();
+    shippingLastName = TextEditingController();
+    shippingCountry = TextEditingController();
+    shippingAddress1 = TextEditingController();
+    shippingAddress2 = TextEditingController();
+    shippingCity = TextEditingController();
+    shippingState = TextEditingController();
+    shippingPostcode = TextEditingController();
+    shippingPhone = TextEditingController();
+
+    billingFirstName = TextEditingController();
+    billingLastName = TextEditingController();
+    billingCountry = TextEditingController();
+    billingAddress1 = TextEditingController();
+    billingAddress2 = TextEditingController();
+    billingCity = TextEditingController();
+    billingState = TextEditingController();
+    billingPostcode = TextEditingController();
+    billingPhone = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _couponController.dispose();
+    _emailController.dispose();
+    // Dispose all controllers to prevent memory leaks
+    shippingFirstName.dispose();
+    shippingLastName.dispose();
+    shippingCountry.dispose();
+    shippingAddress1.dispose();
+    shippingAddress2.dispose();
+    shippingCity.dispose();
+    shippingState.dispose();
+    shippingPostcode.dispose();
+    shippingPhone.dispose();
+
+    billingFirstName.dispose();
+    billingLastName.dispose();
+    billingCountry.dispose();
+    billingAddress1.dispose();
+    billingAddress2.dispose();
+    billingCity.dispose();
+    billingState.dispose();
+    billingPostcode.dispose();
+    billingPhone.dispose();
+
+    super.dispose();
+  }
+
+  bool _sameAsShipping = true;
+  bool _isPickup = false;
+  String _selectedShippingOption = '';
 
   // coupon state
   bool _couponApplied = false;
   String _appliedCoupon = '';
   double _discountPercent = 0.0;
-
-  // sample order items (replace with real cart)
-  final List<Map<String, dynamic>> orderItems = [
-    {
-      'title': 'Beanie with Logo',
-      'previousPrice': 20.0,
-      'price': 18.0,
-      'quantity': 1,
-      'description': 'This is a simple product.',
-    },
-  ];
-
-  double get subtotal => orderItems.fold(0.0, (s, i) => s + (i['price'] as double) * (i['quantity'] as int));
-
-  double get discount => _couponApplied ? subtotal * _discountPercent / 100.0 : 0.0;
-
-  double get total => subtotal - discount + _shippingCost;
 
   String _fmt(double v) => "${v.toStringAsFixed(2)}৳";
 
@@ -79,14 +136,44 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   @override
-  void dispose() {
-    _couponController.dispose();
-    _emailController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    cart = Provider.of<CartProvider>(context, listen: true).cart;
+    final shippingRates = (cart?['shipping']['packages']['default']['rates'] as Map<String, dynamic>).values.toList();
+    final chosenMethod = cart?['shipping']['packages']['default']['chosen_method'] ?? '';
+    _selectedShippingOption = chosenMethod;
+
+    final selectedRate = shippingRates.firstWhere((rate) => rate['key'] == _selectedShippingOption, orElse: () => {});
+    if (selectedRate['method_id'] == 'pickup_location') {
+      _sameAsShipping = false;
+    }
+
+    _isPickup = selectedRate['method_id'] == 'pickup_location';
+    if (_isPickup) _sameAsShipping = false;
+
+    final customer = cart?['customer'] ?? {};
+    final shipping = customer['shipping_address'] ?? {};
+    final billing = customer['billing_address'] ?? {};
+
+    shippingFirstName.text = shipping['shipping_first_name'] ?? "";
+    shippingLastName.text = shipping['shipping_last_name'] ?? "";
+    shippingCountry.text = shipping['shipping_country'] ?? "";
+    shippingAddress1.text = shipping['shipping_address_1'] ?? "";
+    shippingAddress2.text = shipping['shipping_address_2'] ?? "";
+    shippingCity.text = shipping['shipping_city'] ?? "";
+    shippingState.text = shipping['shipping_state'] ?? "";
+    shippingPostcode.text = shipping['shipping_postcode'] ?? "";
+    shippingPhone.text = shipping['shipping_phone'] ?? "";
+
+    billingFirstName.text = billing['billing_first_name'] ?? "";
+    billingLastName.text = billing['billing_last_name'] ?? "";
+    billingCountry.text = billing['billing_country'] ?? "";
+    billingAddress1.text = billing['billing_address_1'] ?? "";
+    billingAddress2.text = billing['billing_address_2'] ?? "";
+    billingCity.text = billing['billing_city'] ?? "";
+    billingState.text = billing['billing_state'] ?? "";
+    billingPostcode.text = billing['billing_postcode'] ?? "";
+    billingPhone.text = billing['billing_phone'] ?? "";
+
     return Scaffold(
       appBar: AppBar(title: const Text("Checkout")),
       body: SingleChildScrollView(
@@ -98,93 +185,120 @@ class _CheckoutPageState extends State<CheckoutPage> {
               // --- Apply coupon ---
               _buildCouponSection(),
               const SizedBox(height: 16),
-
-              // --- Contact info ---
-              // const Text("Contact information", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              // const SizedBox(height: 6),
-              // const Text("We'll use this email to send you details and updates about your order."),
-              // const SizedBox(height: 8),
-              // TextFormField(
-              //   controller: _emailController,
-              //   decoration: const InputDecoration(labelText: "Email address"),
-              // ),
-              // const SizedBox(height: 12),
-              // const Text("You are currently checking out as a guest.", style: TextStyle(color: Colors.grey)),
-              // const SizedBox(height: 16),
-
-              // --- Delivery (shipping method) ---
-              const Text("Delivery", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 6),
+              // --- Shipping options ---
               Column(
-                children: _shippingOptions.map((opt) {
-                  return RadioListTile<String>(
-                    title: Text("${opt['name']} (${_fmt(opt['cost'] as double)})"),
-                    value: opt['name'] as String,
-                    groupValue: _selectedShippingOption,
-                    onChanged: (val) {
-                      setState(() {
-                        _selectedShippingOption = val!;
-                        _shippingCost = (opt['cost'] as double);
-                      });
-                    },
-                    contentPadding: EdgeInsets.zero, // removes extra left/right padding
-                    visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-                    dense: false,
-                  );
-                }).toList(),
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Delivery", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 6),
+
+                  Column(
+                    children: shippingRates.map<Widget>((opt) {
+                      final label = opt['label'] ?? '';
+                      final cost = (double.tryParse(opt['cost'].toString()) ?? 0) / 100;
+                      final key = opt['key'] ?? '';
+
+                      return RadioListTile<String>(
+                        title: Text("$label (${_fmt(cost)})"),
+                        subtitle: opt['meta_data']?['pickup_address'] != null ? Text(opt['meta_data']['pickup_address']) : null,
+                        value: key,
+                        groupValue: _selectedShippingOption,
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedShippingOption = val!;
+                            final cartProvider = Provider.of<CartProvider>(context, listen: false);
+                            cartProvider.changeShippingMethod(val);
+                          });
+                        },
+                        contentPadding: EdgeInsets.zero,
+                        visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+                        dense: false,
+                      );
+                    }).toList(),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
-
-              // --- Shipping address form ---
-              const Text("Shipping address", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 6),
-              Form(
-                key: _shippingFormKey,
-                child: Column(
-                  children: [
-                    TextFormField(
-                      decoration: const InputDecoration(labelText: "Country/Region"),
-                      initialValue: "Bangladesh",
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(decoration: const InputDecoration(labelText: "First name")),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextFormField(decoration: const InputDecoration(labelText: "Last name")),
-                        ),
-                      ],
-                    ),
-                    TextFormField(decoration: const InputDecoration(labelText: "Address")),
-                    TextFormField(decoration: const InputDecoration(labelText: "+ Add apartment, suite, etc.")),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(decoration: const InputDecoration(labelText: "City")),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: TextFormField(
-                            decoration: const InputDecoration(labelText: "District"),
-                            initialValue: "Dhaka",
-                          ),
-                        ),
-                      ],
-                    ),
-                    TextFormField(decoration: const InputDecoration(labelText: "Postal code (optional)")),
-                    TextFormField(decoration: const InputDecoration(labelText: "Phone (optional)")),
-                  ],
-                ),
+              const Text("Payment options", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const ListTile(
+                leading: Icon(Icons.money),
+                title: Text("Cash on delivery"),
+                subtitle: Text("Pay with cash upon delivery."),
               ),
-
               const SizedBox(height: 12),
-              CheckboxListTile(
-                value: _sameAsShipping,
-                onChanged: (v) => setState(() => _sameAsShipping = v ?? true),
-                title: const Text("Use same address for billing"),
-              ),
+              // --- Shipping address form ---
+              if (!_isPickup) ...[
+                const Text("Shipping address", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 6),
+                Form(
+                  key: _shippingFormKey,
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: shippingCountry,
+                        decoration: const InputDecoration(labelText: "Country/Region"),
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: shippingFirstName,
+                              decoration: const InputDecoration(labelText: "First name"),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextFormField(
+                              controller: shippingLastName,
+                              decoration: const InputDecoration(labelText: "Last name"),
+                            ),
+                          ),
+                        ],
+                      ),
+                      TextFormField(
+                        controller: shippingAddress1,
+                        decoration: const InputDecoration(labelText: "Address"),
+                      ),
+                      TextFormField(
+                        controller: shippingAddress2,
+                        decoration: const InputDecoration(labelText: "+ Add apartment, suite, etc."),
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: shippingCity,
+                              decoration: const InputDecoration(labelText: "City"),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextFormField(
+                              controller: shippingState,
+                              decoration: const InputDecoration(labelText: "District"),
+                            ),
+                          ),
+                        ],
+                      ),
+                      TextFormField(
+                        controller: shippingPostcode,
+                        decoration: const InputDecoration(labelText: "Postal code (optional)"),
+                      ),
+                      TextFormField(
+                        controller: shippingPhone,
+                        decoration: const InputDecoration(labelText: "Phone (optional)"),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+                CheckboxListTile(
+                  value: _sameAsShipping,
+                  onChanged: (v) => setState(() => _sameAsShipping = v ?? true),
+                  title: const Text("Use same address for billing"),
+                ),
+              ],
 
               if (!_sameAsShipping) ...[
                 const SizedBox(height: 8),
@@ -194,46 +308,66 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   key: _billingFormKey,
                   child: Column(
                     children: [
-                      TextFormField(decoration: const InputDecoration(labelText: "Country/Region")),
+                      TextFormField(
+                        controller: billingCountry,
+                        decoration: const InputDecoration(labelText: "Country/Region"),
+                      ),
                       Row(
                         children: [
                           Expanded(
-                            child: TextFormField(decoration: const InputDecoration(labelText: "First name")),
+                            child: TextFormField(
+                              controller: billingFirstName,
+                              decoration: const InputDecoration(labelText: "First name"),
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: TextFormField(decoration: const InputDecoration(labelText: "Last name")),
+                            child: TextFormField(
+                              controller: billingLastName,
+                              decoration: const InputDecoration(labelText: "Last name"),
+                            ),
                           ),
                         ],
                       ),
-                      TextFormField(decoration: const InputDecoration(labelText: "Address")),
-                      TextFormField(decoration: const InputDecoration(labelText: "+ Add apartment, suite, etc.")),
+                      TextFormField(
+                        controller: billingAddress1,
+                        decoration: const InputDecoration(labelText: "Address"),
+                      ),
+                      TextFormField(
+                        controller: billingAddress2,
+                        decoration: const InputDecoration(labelText: "+ Add apartment, suite, etc."),
+                      ),
                       Row(
                         children: [
                           Expanded(
-                            child: TextFormField(decoration: const InputDecoration(labelText: "City")),
+                            child: TextFormField(
+                              controller: billingCity,
+                              decoration: const InputDecoration(labelText: "City"),
+                            ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: TextFormField(decoration: const InputDecoration(labelText: "District")),
+                            child: TextFormField(
+                              controller: billingState,
+                              decoration: const InputDecoration(labelText: "District"),
+                            ),
                           ),
                         ],
                       ),
-                      TextFormField(decoration: const InputDecoration(labelText: "Postal code (optional)")),
-                      TextFormField(decoration: const InputDecoration(labelText: "Phone (optional)")),
+                      TextFormField(
+                        controller: billingPostcode,
+                        decoration: const InputDecoration(labelText: "Postal code (optional)"),
+                      ),
+                      TextFormField(
+                        controller: billingPhone,
+                        decoration: const InputDecoration(labelText: "Phone (optional)"),
+                      ),
                     ],
                   ),
                 ),
               ],
 
               const SizedBox(height: 16),
-              const Text("Payment options", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const ListTile(
-                leading: Icon(Icons.money),
-                title: Text("Cash on delivery"),
-                subtitle: Text("Pay with cash upon delivery."),
-              ),
-              const SizedBox(height: 12),
 
               const Text("Add a note to your order", style: TextStyle(fontSize: 16)),
               const SizedBox(height: 6),
@@ -247,34 +381,44 @@ class _CheckoutPageState extends State<CheckoutPage> {
               const SizedBox(height: 8),
 
               // Order items
-              ...orderItems.map((it) {
-                final itemTotal = (it['price'] as double) * (it['quantity'] as int);
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    title: Text(it['title'] as String),
-                    subtitle: Text(
-                      "Previous price: ${_fmt(it['previousPrice'] as double)}  Discounted price: ${_fmt(it['price'] as double)}\n${it['description']}",
-                    ),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(_fmt(itemTotal), style: const TextStyle(fontWeight: FontWeight.bold)),
-                        Text("x${it['quantity']}", style: const TextStyle(fontSize: 12)),
-                      ],
-                    ),
-                  ),
-                );
-              }),
+              ...cart?['items']?.map<Widget>((it) {
+                    return ListTile(
+                      leading: CachedNetworkImage(
+                        imageUrl: it['featured_image'] != null && it['featured_image'].isNotEmpty ? it['featured_image'] : "",
+
+                        placeholder: (context, url) => const SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                        ),
+                        errorWidget: (context, url, error) => const FaIcon(FontAwesomeIcons.image, size: 30, color: Colors.grey),
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                      ),
+                      title: Text(it['name'] ?? "", style: TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Padding(
+                        padding: const EdgeInsets.only(left: 20),
+                        child: Text(
+                          "${it['quantity']['value']}p x ${int.parse(it['price']) / 100}৳ = ${int.parse(it['totals']['subtotal']) / 100}৳",
+                        ),
+                      ),
+                    );
+                  }).toList() ??
+                  [],
+              const Divider(),
 
               // Coupon & summary rows
-              const SizedBox(height: 8),
-              _summaryRow("Subtotal", _fmt(subtotal)),
-              if (_couponApplied) _summaryRow("Discount ($_appliedCoupon)", "-${_fmt(discount)}"),
-              _summaryRow("Flat rate", _fmt(_shippingCost)),
+              const SizedBox(),
+              _summaryRow("Subtotal", _fmt((double.tryParse(cart?["totals"]['subtotal'] ?? '0') ?? 0) / 100)),
+              if (_couponApplied)
+                _summaryRow(
+                  "Discount ($_appliedCoupon)",
+                  "-${_fmt((double.tryParse(cart?["totals"]['discount_total'] ?? '0') ?? 0) / 100)}",
+                ),
+              _summaryRow("Shipping", _fmt((double.tryParse(cart?["totals"]['shipping_total'] ?? '0') ?? 0) / 100)),
               const Divider(),
-              _summaryRow("Total", _fmt(total), bold: true),
-
+              _summaryRow("Total", _fmt((double.tryParse(cart?["totals"]['total'] ?? '0') ?? 0) / 100), bold: true),
               const SizedBox(height: 16),
               const Text(
                 "By proceeding with your purchase you agree to our Terms and Conditions and Privacy Policy",
@@ -282,29 +426,26 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
               const SizedBox(height: 12),
 
-              Row(
-                children: [
-                  TextButton(onPressed: () => Navigator.pop(context), child: const Text("Return to Cart")),
-                  const Spacer(),
-                  ElevatedButton(
-                    onPressed: () {
-                      // validate forms (basic)
-                      final shippingValid = _shippingFormKey.currentState?.validate() ?? true;
-                      final billingValid = _sameAsShipping ? true : (_billingFormKey.currentState?.validate() ?? true);
-                      if (!shippingValid || !billingValid) {
-                        ScaffoldMessenger.of(
-                          context,
-                        ).showSnackBar(const SnackBar(content: Text("Please complete address form(s)")));
-                        return;
-                      }
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    // validate forms (basic)
+                    final shippingValid = _shippingFormKey.currentState?.validate() ?? true;
+                    final billingValid = _sameAsShipping ? true : (_billingFormKey.currentState?.validate() ?? true);
+                    if (!shippingValid || !billingValid) {
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(const SnackBar(content: Text("Please complete address form(s)")));
+                      return;
+                    }
 
-                      // Place order logic here
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Order placed (demo)")));
-                    },
-                    style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20)),
-                    child: const Text("Place Order"),
-                  ),
-                ],
+                    // Place order logic here
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Order placed (demo)")));
+                  },
+                  style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20)),
+                  child: const Text("Place Order"),
+                ),
               ),
             ],
           ),
@@ -315,7 +456,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   Widget _summaryRow(String label, String value, {bool bold = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

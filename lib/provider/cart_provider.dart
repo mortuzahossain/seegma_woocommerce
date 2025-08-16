@@ -51,4 +51,16 @@ class CartProvider extends ChangeNotifier {
       debugPrint('Error removing item: $e');
     }
   }
+
+  // ---------------------
+  // --------------------
+  Future<void> changeShippingMethod(String rateId) async {
+    try {
+      await ApiService.post('/hh/v1/update-shipping', body: {"rate_id": rateId});
+      fetchCart();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error updating quantity: $e');
+    }
+  }
 }

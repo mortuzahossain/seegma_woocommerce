@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -34,10 +32,6 @@ class _CartPageState extends State<CartPage> {
       isLoggedIn = token != null && token.isNotEmpty;
       if (isLoggedIn) {
         Future.microtask(() => Provider.of<CartProvider>(context, listen: false).fetchCart());
-
-        // WidgetsBinding.instance.addPostFrameCallback((_) {
-        //   Provider.of<CartProvider>(context, listen: false).fetchCart();
-        // });
       }
     });
   }
@@ -275,7 +269,7 @@ class _CartPageState extends State<CartPage> {
                 onPressed: () {
                   var cart = Provider.of<CartProvider>(context, listen: false).cart;
                   // print(cart);
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => CheckoutPage(cart: cart)));
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => CheckoutPage()));
                 },
                 child: const Text("Proceed to Checkout", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
