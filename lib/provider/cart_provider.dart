@@ -1,5 +1,9 @@
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:seegma_woocommerce/api/api_service.dart';
+import 'package:seegma_woocommerce/ui/home/dashboard.dart';
+import 'package:seegma_woocommerce/utils/loading_dialog.dart';
+import 'package:seegma_woocommerce/utils/snackbar.dart';
 
 class CartProvider extends ChangeNotifier {
   bool isLoading = false;
@@ -71,6 +75,30 @@ class CartProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('Error updating quantity: $e');
+    }
+  }
+
+  Future<void> placeOrder(BuildContext context) async {
+    try {
+      LoadingDialog.show(context);
+      await ApiService.post(
+        '/hh/v1/checkout',
+        body: {"payment_method": "cod", "payment_method_title": "Cash on delivery", "set_paid": false},
+      );
+
+      LoadingDialog.hide(context);
+      showAwesomeSnackbar(context: context, type: ContentType.success, title: 'Success!', message: "Order Placed Successfully!");
+
+      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const DashboardScreen()), (route) => false);
+    } catch (e) {
+      final message = e is Exception ? e.toString().replaceFirst('Exception:', '') : 'Something went wrong';
+      final RegExp exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
+      String plainText = message.replaceAll(exp, '').trim();
+      if (plainText.startsWith('Error:')) {
+        plainText = plainText.replaceFirst('Error:', '').trim();
+      }
+      LoadingDialog.hide(context);
+      showAwesomeSnackbar(context: context, type: ContentType.failure, title: 'Failed!', message: plainText);
     }
   }
 }

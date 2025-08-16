@@ -410,11 +410,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
               // Coupon & summary rows
               const SizedBox(),
               _summaryRow("Subtotal", _fmt((double.tryParse(cart?["totals"]['subtotal'] ?? '0') ?? 0) / 100)),
-              // if (_couponApplied)
-              _summaryRow(
-                "Discount (${_appliedCoupons.join(', ')})",
-                "-${_fmt((double.tryParse(cart?["totals"]['discount_total'] ?? '0') ?? 0) / 100)}",
-              ),
+              if (coupons.isNotEmpty)
+                _summaryRow(
+                  "Discount (${_appliedCoupons.join(', ')})",
+                  "-${_fmt((double.tryParse(cart?["totals"]['discount_total'] ?? '0') ?? 0) / 100)}",
+                ),
               _summaryRow("Shipping", _fmt((double.tryParse(cart?["totals"]['shipping_total'] ?? '0') ?? 0) / 100)),
               const Divider(),
               _summaryRow("Total", _fmt((double.tryParse(cart?["totals"]['total'] ?? '0') ?? 0) / 100), bold: true),
@@ -440,7 +440,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     }
 
                     // Place order logic here
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Order placed (demo)")));
+
+                    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+                    cartProvider.placeOrder(context);
                   },
                   style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20)),
                   child: const Text("Place Order"),
