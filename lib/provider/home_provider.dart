@@ -19,18 +19,18 @@ class HomepageProvider with ChangeNotifier {
     final cachedTime = prefs.getInt(cacheTimeKey);
 
     // Use cache if available and not expired
-    // if (cachedJson != null && cachedTime != null) {
-    //   final cacheAge = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(cachedTime));
+    if (cachedJson != null && cachedTime != null) {
+      final cacheAge = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(cachedTime));
 
-    //   if (cacheAge < cacheDuration) {
-    //     final data = jsonDecode(cachedJson);
-    //     categories = data['categories'] ?? [];
-    //     homepagedata = data['homepagedata'] ?? [];
-    //     isLoading = false;
-    //     notifyListeners();
-    //     return;
-    //   }
-    // }
+      if (cacheAge < cacheDuration) {
+        final data = jsonDecode(cachedJson);
+        categories = data['categories'] ?? [];
+        homepagedata = data['homepagedata'] ?? [];
+        isLoading = false;
+        notifyListeners();
+        return;
+      }
+    }
 
     // Fetch from API
     try {

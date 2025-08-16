@@ -18,15 +18,15 @@ class CategoriesProvider with ChangeNotifier {
     final cachedTime = prefs.getInt(cacheTimeKey);
 
     // Use cache if not expired
-    // if (cachedJson != null && cachedTime != null) {
-    //   final cacheAge = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(cachedTime));
-    //   if (cacheAge < cacheDuration) {
-    //     categories = jsonDecode(cachedJson);
-    //     isLoading = false;
-    //     notifyListeners();
-    //     return;
-    //   }
-    // }
+    if (cachedJson != null && cachedTime != null) {
+      final cacheAge = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(cachedTime));
+      if (cacheAge < cacheDuration) {
+        categories = jsonDecode(cachedJson);
+        isLoading = false;
+        notifyListeners();
+        return;
+      }
+    }
 
     // Fetch from API
     try {

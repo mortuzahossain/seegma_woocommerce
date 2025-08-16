@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:seegma_woocommerce/provider/product_details_provider.dart';
+import 'package:seegma_woocommerce/provider/tryon_provider.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ProductDetailsPage extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -131,7 +133,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
             children: [
               if ((Provider.of<ProductDetailsProvider>(context, listen: false).product?['virtual_tryon'] ?? false))
                 ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () {
+                    _showTryOnBottomSheet(context, widget.product['id']);
+                  },
                   icon: const FaIcon(FontAwesomeIcons.eye, size: 16),
                   label: const Text('Virtual Try-On'),
                 ),
@@ -139,16 +143,15 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed:
-                      (Provider.of<ProductDetailsProvider>(context, listen: false).product?['purchasable'] ?? false) &&
-                          (Provider.of<ProductDetailsProvider>(context, listen: false).product?['stock_status'] ?? '') ==
-                              'instock'
+                      (Provider.of<ProductDetailsProvider>(context, listen: true).product?['purchasable'] ?? false) &&
+                          (Provider.of<ProductDetailsProvider>(context, listen: true).product?['stock_status'] ?? '') == 'instock'
                       ? () {}
                       : null,
                   icon: const FaIcon(FontAwesomeIcons.cartPlus, size: 16),
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
-                        (Provider.of<ProductDetailsProvider>(context, listen: false).product?['purchasable'] ?? false) &&
-                            (Provider.of<ProductDetailsProvider>(context, listen: false).product?['stock_status'] ?? '') ==
+                        (Provider.of<ProductDetailsProvider>(context, listen: true).product?['purchasable'] ?? false) &&
+                            (Provider.of<ProductDetailsProvider>(context, listen: true).product?['stock_status'] ?? '') ==
                                 'instock'
                         ? Colors.blue
                         : Colors.grey,
@@ -163,6 +166,73 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
     );
   }
 }
+
+void _showTryOnBottomSheet(BuildContext context, int productId) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+    builder: (ctx) {
+      return SizedBox(
+        width: double.infinity,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Virtual Try-On Instructions",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                "• Make sure your face is clearly visible\n"
+                "• Good lighting helps better results\n"
+                "• Avoid hats, sunglasses, or filters",
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    Navigator.pop(ctx);
+
+                    // pick image
+                    final picker = ImagePicker();
+                    final picked = await picker.pickImage(source: ImageSource.gallery);
+                    if (picked == null) return;
+
+                    // call API via provider
+                    final provider = Provider.of<TryOnProvider>(context, listen: false);
+                    await provider.processTryOn(context, productId, picked.path);
+
+                    if (provider.processedImageUrl != null && context.mounted) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => _FullScreenImageGallery(images: [provider.processedImageUrl!], initialIndex: 0),
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text("Continue"),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+// Helper
 
 Widget buildImageSlider(Map<String, dynamic> product, {double height = 250}) {
   final List<dynamic> imagesData = product['images'] ?? [];
@@ -269,8 +339,8 @@ class _FullScreenImageGallery extends StatelessWidget {
             backgroundDecoration: const BoxDecoration(color: Colors.black),
           ),
           Positioned(
-            top: 40,
-            left: 20,
+            top: 60,
+            left: 30,
             child: IconButton(
               icon: const Icon(Icons.close, color: Colors.white, size: 30),
               onPressed: () => Navigator.pop(context),
