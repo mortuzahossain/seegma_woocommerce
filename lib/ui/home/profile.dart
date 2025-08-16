@@ -155,6 +155,7 @@ class _ProfilePageState extends State<ProfilePage> {
       FontAwesomeIcons.boxOpen: Colors.orange, // Orders
       FontAwesomeIcons.download: Colors.green, // Downloads
       FontAwesomeIcons.locationDot: Colors.purple, // Addresses
+      FontAwesomeIcons.headset: Colors.orange, // Addresses
       FontAwesomeIcons.user: Colors.teal, // Account details
       FontAwesomeIcons.rightFromBracket: Colors.red, // Logout
       FontAwesomeIcons.solidHeart: Colors.red, // Logout

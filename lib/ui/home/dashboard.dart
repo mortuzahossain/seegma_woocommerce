@@ -14,18 +14,35 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
-
-  final List<Widget> _pages = [HomePage(), DiscoverPage(), CartPage(), ProfilePage()];
+  final List<Widget?> _pages = [null, null, null, null];
 
   @override
   Widget build(BuildContext context) {
+    // Lazily initialize the page when selected
+    if (_pages[_currentIndex] == null) {
+      switch (_currentIndex) {
+        case 0:
+          _pages[_currentIndex] = HomePage();
+          break;
+        case 1:
+          _pages[_currentIndex] = DiscoverPage();
+          break;
+        case 2:
+          _pages[_currentIndex] = CartPage();
+          break;
+        case 3:
+          _pages[_currentIndex] = ProfilePage();
+          break;
+      }
+    }
+
     return Scaffold(
-      body: _pages[_currentIndex],
+      body: _pages[_currentIndex]!,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
         onTap: (index) => setState(() => _currentIndex = index),
-        items: [
+        items: const [
           BottomNavigationBarItem(icon: FaIcon(FontAwesomeIcons.shop), label: 'Shop'),
           BottomNavigationBarItem(icon: FaIcon(FontAwesomeIcons.magnifyingGlass), label: 'Discover'),
           BottomNavigationBarItem(icon: FaIcon(FontAwesomeIcons.cartShopping), label: 'Cart'),
