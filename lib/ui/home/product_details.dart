@@ -49,21 +49,19 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
 
     var product = Provider.of<ProductDetailsProvider>(context, listen: false).product;
     if (product == null) return;
-    bool haveVariation = false;
     Map<String, dynamic>? variation;
     if (Provider.of<ProductDetailsProvider>(context, listen: false).variations.isNotEmpty) {
       variation = await _showVariationSelector(context, product);
-      haveVariation = true;
     }
-    print({
-      "id": widget.product['id'],
-      "quantity": _quantity,
-      if (variation != null && variation.isNotEmpty) "variation": variation['attributes'],
-    });
+    // print({
+    //   "id": widget.product['id'],
+    //   "quantity": _quantity,
+    //   if (variation != null && variation.isNotEmpty) "variation": variation['attributes'],
+    // });
 
     LoadingDialog.show(context);
     try {
-      final response = await ApiService.post(
+      await ApiService.post(
         '/cocart/v2/cart/add-item',
         body: {
           "id": widget.product['id'].toString(),
@@ -298,7 +296,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
                       // isScrollable: true,
                       tabs: const [
                         Tab(text: 'Description'),
-                        Tab(text: 'Additional Details'),
+                        Tab(text: 'Other Details'),
                         Tab(text: 'Reviews'),
                       ],
                     ),

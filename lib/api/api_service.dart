@@ -65,6 +65,42 @@ class ApiService {
     }
   }
 
+  static Future<dynamic> delete(String endpoint, {Map<String, dynamic>? body, Map<String, String>? headers}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token') ?? '';
+
+      final url = Uri.parse('$baseUrl$endpoint');
+      final defaultHeaders = {'Content-Type': 'application/json', if (token.isNotEmpty) 'Authorization': 'Bearer $token'};
+      final allHeaders = {...defaultHeaders, ...?headers};
+
+      final response = await http.delete(url, headers: allHeaders, body: body != null ? json.encode(body) : null);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        if (response.body.isEmpty) return null;
+        return json.decode(response.body);
+      } else {
+        String message;
+        try {
+          final data = json.decode(response.body);
+          message = data['message'] ?? 'API error';
+        } catch (_) {
+          message = 'API error';
+        }
+        throw Exception(message);
+      }
+    } on SocketException {
+      throw Exception('No Internet connection');
+    } on HttpException catch (e) {
+      throw Exception(e.message);
+    } on FormatException catch (e) {
+      throw Exception('Bad response format: ${e.message}');
+    } catch (e) {
+      print(e);
+      rethrow;
+    }
+  }
+
   static Future<dynamic> postMultipart(
     String endpoint, {
     required Map<String, String> fields,

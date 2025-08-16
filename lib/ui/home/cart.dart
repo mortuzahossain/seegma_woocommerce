@@ -1,7 +1,12 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:seegma_woocommerce/provider/cart_provider.dart';
 import 'package:seegma_woocommerce/ui/home/checkout.dart';
+import 'package:seegma_woocommerce/utils/loading_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CartPage extends StatefulWidget {
@@ -26,44 +31,51 @@ class _CartPageState extends State<CartPage> {
 
     setState(() {
       isLoggedIn = token != null && token.isNotEmpty;
-    });
-  }
-
-  List<Map<String, dynamic>> cartItems = [
-    {
-      "name": "Hoodie with Logo",
-      "price": 45.00,
-      "description": "This is a simple product.",
-      "quantity": 2,
-      "image": "https://via.placeholder.com/100",
-    },
-    {
-      "name": "Broken Image Item",
-      "price": 30.00,
-      "description": "This will fail to load.",
-      "quantity": 1,
-      "image": "https://wrong-url.com/notfound.png",
-    },
-  ];
-
-  Future<void> refreshCart() async {
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() {});
-  }
-
-  void updateQuantity(int index, int change) {
-    setState(() {
-      final newQty = cartItems[index]["quantity"] + change;
-      if (newQty > 0) {
-        cartItems[index]["quantity"] = newQty;
+      if (isLoggedIn) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Provider.of<CartProvider>(context, listen: false).fetchCart();
+        });
       }
     });
   }
 
-  void removeItem(int index) {
-    setState(() {
-      cartItems.removeAt(index);
+  Future<void> refreshCart() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CartProvider>(context, listen: false).fetchCart();
     });
+  }
+
+  void updateQuantity(int index, int change) {
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    final item = cartProvider.items[index];
+    final currentQty = int.parse(item['quantity']['value'].toString());
+    final newQty = currentQty + change;
+    if (newQty > 0) {
+      cartProvider.updateQuantity(item['item_key'], newQty);
+    }
+  }
+
+  void removeItem(int index) async {
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    final item = cartProvider.items[index];
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Remove Item"),
+          content: const Text("Are you sure you want to remove this item from the cart?"),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+            ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text("Remove")),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      cartProvider.removeItem(item['item_key']);
+    }
   }
 
   @override
@@ -73,8 +85,31 @@ class _CartPageState extends State<CartPage> {
       body: isLoggedIn
           ? RefreshIndicator(
               onRefresh: refreshCart,
-              child: cartItems.isEmpty
-                  ? ListView(
+              child: Consumer<CartProvider>(
+                builder: (context, provider, _) {
+                  if (provider.isLoading) return animatedLoader();
+
+                  if (provider.hasError) {
+                    return ListView(
+                      children: [
+                        const SizedBox(height: 100),
+                        Center(
+                          child: Column(
+                            children: [
+                              const FaIcon(FontAwesomeIcons.triangleExclamation, size: 80, color: Colors.red),
+                              const SizedBox(height: 16),
+                              const Text("Failed to load cart", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 8),
+                              const Text("Something went wrong while fetching your cart.", style: TextStyle(color: Colors.grey)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+
+                  if (provider.items.isEmpty) {
+                    return ListView(
                       children: [
                         const SizedBox(height: 100),
                         Center(
@@ -89,88 +124,95 @@ class _CartPageState extends State<CartPage> {
                           ),
                         ),
                       ],
-                    )
-                  : Padding(
-                      padding: const EdgeInsets.only(bottom: 70), // leave space for button
-                      child: ListView.separated(
-                        padding: const EdgeInsets.all(12),
-                        itemCount: cartItems.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 12),
-                        itemBuilder: (context, index) {
-                          final item = cartItems[index];
-                          final total = item["price"] * item["quantity"];
-                          return Card(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
+                    );
+                  }
+                  return ListView.separated(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: provider.items.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 6),
+                    itemBuilder: (context, index) {
+                      final item = provider.items[index];
+                      // final total = item["price"] * item["quantity"];
+                      final variation = item['meta']?['variation'];
+                      final variationText = (variation is Map<String, dynamic> && variation.isNotEmpty)
+                          ? variation.entries.map((e) => "${e.key}: ${e.value}").join(", ")
+                          : "";
+                      return Card(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: CachedNetworkImage(
-                                          imageUrl: item["image"],
-                                          width: 80,
-                                          height: 80,
-                                          fit: BoxFit.cover,
-                                          placeholder: (_, __) => Container(
-                                            width: 80,
-                                            height: 80,
-                                            color: Colors.grey[300],
-                                            child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                                          ),
-                                          errorWidget: (_, __, ___) => Container(
-                                            width: 80,
-                                            height: 80,
-                                            color: Colors.grey[200],
-                                            child: const Center(
-                                              child: FaIcon(FontAwesomeIcons.image, color: Colors.grey, size: 28),
-                                            ),
-                                          ),
-                                        ),
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: CachedNetworkImage(
+                                      imageUrl: item["featured_image"],
+                                      width: 80,
+                                      height: 80,
+                                      fit: BoxFit.scaleDown,
+                                      placeholder: (_, __) => Container(
+                                        width: 80,
+                                        height: 80,
+                                        color: Colors.grey[300],
+                                        child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
                                       ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(item["name"], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              "${item["price"].toStringAsFixed(2)}৳",
-                                              style: const TextStyle(color: Colors.red),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(item["description"], style: const TextStyle(color: Colors.grey)),
-                                          ],
-                                        ),
+                                      errorWidget: (_, __, ___) => Container(
+                                        width: 80,
+                                        height: 80,
+                                        color: Colors.grey[200],
+                                        child: const Center(child: FaIcon(FontAwesomeIcons.image, color: Colors.grey, size: 28)),
                                       ),
-                                      Text(
-                                        "${total.toStringAsFixed(2)}৳",
-                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                      ),
-                                    ],
+                                    ),
                                   ),
-                                  const Divider(height: 20),
-                                  Row(
-                                    children: [
-                                      IconButton(icon: const Icon(Icons.remove), onPressed: () => updateQuantity(index, -1)),
-                                      Text(item["quantity"].toString(), style: const TextStyle(fontSize: 16)),
-                                      IconButton(icon: const Icon(Icons.add), onPressed: () => updateQuantity(index, 1)),
-                                      const Spacer(),
-                                      TextButton(onPressed: () => removeItem(index), child: const Text("Remove item")),
-                                    ],
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(item["name"], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          "${double.parse(item["price"]) / 100}৳",
+                                          style: const TextStyle(color: Colors.green),
+                                        ),
+                                        const SizedBox(height: 4),
+
+                                        Text(variationText, style: const TextStyle(color: Colors.grey)),
+                                      ],
+                                    ),
+                                  ),
+                                  Text(
+                                    "${item["totals"]["total"]}৳",
+                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                                   ),
                                 ],
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
+                              const Divider(),
+                              Row(
+                                children: [
+                                  IconButton(icon: const Icon(Icons.remove), onPressed: () => updateQuantity(index, -1)),
+                                  Text(item["quantity"]['value'].toString(), style: const TextStyle(fontSize: 16)),
+                                  IconButton(icon: const Icon(Icons.add), onPressed: () => updateQuantity(index, 1)),
+                                  const Spacer(),
+                                  TextButton.icon(
+                                    onPressed: () => removeItem(index),
+                                    icon: const FaIcon(FontAwesomeIcons.trash, color: Colors.red, size: 16),
+                                    label: const Text("Remove item", style: TextStyle(color: Colors.red)),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             )
           : Center(
               child: Card(
@@ -215,13 +257,9 @@ class _CartPageState extends State<CartPage> {
               ),
             ),
 
-      bottomNavigationBar: cartItems.isNotEmpty && isLoggedIn
+      bottomNavigationBar: Provider.of<CartProvider>(context, listen: false).cart?['items']?.length > 0 && isLoggedIn
           ? Container(
               padding: const EdgeInsets.all(12),
-              // decoration: BoxDecoration(
-              //   color: Colors.white,
-              //   boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, -2))],
-              // ),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14), backgroundColor: Colors.blue),
                 onPressed: () {

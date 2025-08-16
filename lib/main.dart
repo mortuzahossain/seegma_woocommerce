@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:seegma_woocommerce/provider/cart_provider.dart';
 import 'package:seegma_woocommerce/provider/category_product_provider.dart';
 import 'package:seegma_woocommerce/provider/category_provider.dart';
 import 'package:seegma_woocommerce/provider/home_provider.dart';
@@ -21,6 +22,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => CategoryProductsProvider()),
         ChangeNotifierProvider(create: (_) => ProductDetailsProvider()),
         ChangeNotifierProvider(create: (_) => TryOnProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
       ],
       child: const MainApp(),
     ),
