@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:seegma_woocommerce/ui/home/product_details.dart';
+import 'package:seegma_woocommerce/utils/themes.dart';
 
 class ProductCard extends StatelessWidget {
   final Map<String, dynamic> product;
@@ -71,8 +72,8 @@ class ProductCard extends StatelessWidget {
                             product["sale_price"] != null &&
                             product["sale_price"].toString().isNotEmpty)
                           Text(
-                            "\$${product["sale_price"]}",
-                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 16),
+                            "${AppText.currency}${product["sale_price"]}",
+                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red, fontSize: 16),
                           ),
 
                         if (product["on_sale"] == true &&
@@ -82,7 +83,7 @@ class ProductCard extends StatelessWidget {
 
                         // Show regular price (strike-through if on sale and regular_price exists)
                         Text(
-                          "\$${product["regular_price"] != null && product["regular_price"].toString().isNotEmpty ? product["regular_price"] : product["price"] ?? ''}",
+                          "${AppText.currency}${product["regular_price"] != null && product["regular_price"].toString().isNotEmpty ? product["regular_price"] : product["price"] ?? ''}",
                           style: TextStyle(
                             fontSize: 14,
                             color: product["on_sale"] == true ? Colors.grey : Colors.black,

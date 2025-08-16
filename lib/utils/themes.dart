@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+class AppText {
+  static const String currency = "৳";
+}
+
 class AppColors {
   static const Color primaryBlue = Color(0xFF1E88E5);
   static const Color primaryBlueDark = Color(0xFF1565C0);

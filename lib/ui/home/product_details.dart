@@ -206,18 +206,17 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
           ),
 
           // Favorite toggle
-          IconButton(
-            icon: FaIcon(
-              widget.product['is_favorite'] ? FontAwesomeIcons.solidHeart : FontAwesomeIcons.heart,
-              color: widget.product['is_favorite'] ? Colors.red : null,
-            ),
-            onPressed: () {
-              setState(() {
-                // isFav = !isFav;
-              });
-            },
-          ),
-
+          // IconButton(
+          //   icon: FaIcon(
+          //     widget.product['is_favorite'] ? FontAwesomeIcons.solidHeart : FontAwesomeIcons.heart,
+          //     color: widget.product['is_favorite'] ? Colors.red : null,
+          //   ),
+          //   onPressed: () {
+          //     setState(() {
+          //       // isFav = !isFav;
+          //     });
+          //   },
+          // ),
           IconButton(
             icon: const FaIcon(FontAwesomeIcons.cartShopping),
             onPressed: () async {
