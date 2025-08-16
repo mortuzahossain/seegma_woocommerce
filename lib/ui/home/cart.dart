@@ -262,16 +262,21 @@ class _CartPageState extends State<CartPage> {
             ),
 
       bottomNavigationBar: (Provider.of<CartProvider>(context).cart?['items']?.isNotEmpty == true && isLoggedIn)
-          ? Container(
-              padding: const EdgeInsets.all(12),
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14), backgroundColor: Colors.blue),
-                onPressed: () {
-                  var cart = Provider.of<CartProvider>(context, listen: false).cart;
-                  // print(cart);
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => CheckoutPage()));
-                },
-                child: const Text("Proceed to Checkout", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ? SafeArea(
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    backgroundColor: Colors.blue,
+                  ),
+                  onPressed: () {
+                    var cart = Provider.of<CartProvider>(context, listen: false).cart;
+                    // print(cart);
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => CheckoutPage()));
+                  },
+                  child: const Text("Proceed to Checkout", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
               ),
             )
           : SizedBox.shrink(), // fallback when null

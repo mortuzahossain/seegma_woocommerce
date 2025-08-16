@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:seegma_woocommerce/api/api_service.dart';
+import 'package:seegma_woocommerce/ui/home/cart.dart';
 import 'package:seegma_woocommerce/utils/loading_dialog.dart';
 import 'package:seegma_woocommerce/utils/login_helper.dart';
 import 'package:seegma_woocommerce/utils/snackbar.dart';
@@ -221,7 +222,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
             onPressed: () async {
               var isLoggedIn = await ensureLoggedIn(context);
               if (isLoggedIn) {
-                // call go to cart
+                Navigator.push(context, MaterialPageRoute(builder: (_) => CartPage()));
               }
             },
           ),
