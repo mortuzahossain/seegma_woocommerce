@@ -6,6 +6,7 @@ import 'package:seegma_woocommerce/api/api_service.dart';
 import 'package:seegma_woocommerce/utils/loading_dialog.dart';
 import 'package:seegma_woocommerce/utils/login_helper.dart';
 import 'package:seegma_woocommerce/utils/snackbar.dart';
+import 'package:seegma_woocommerce/utils/themes.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:flutter/material.dart';
@@ -260,11 +261,17 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
                       child: Row(
                         children: [
                           if (product["on_sale"] == true && (product["sale_price"]?.toString().isNotEmpty ?? false))
-                            Text("\$${product["sale_price"]}", style: Theme.of(context).textTheme.titleLarge),
+                            Text(
+                              "${AppText.currency}${product["sale_price"]}",
+                              style: Theme.of(
+                                context,
+                              ).textTheme.titleLarge?.copyWith(color: product["on_sale"] == true ? Colors.green : Colors.black),
+                            ),
+
                           if (product["on_sale"] == true && (product["sale_price"]?.toString().isNotEmpty ?? false))
                             const SizedBox(width: 5),
                           Text(
-                            "\$${(product["regular_price"]?.toString().isNotEmpty ?? false) ? product["regular_price"] : product["price"] ?? ''}",
+                            "${AppText.currency}${(product["regular_price"]?.toString().isNotEmpty ?? false) ? product["regular_price"] : product["price"] ?? ''}",
                             style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               color: (product["on_sale"] == true) ? Colors.grey : Colors.black,
                               decoration:

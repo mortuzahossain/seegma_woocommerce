@@ -73,7 +73,7 @@ class ProductCard extends StatelessWidget {
                             product["sale_price"].toString().isNotEmpty)
                           Text(
                             "${AppText.currency}${product["sale_price"]}",
-                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.red, fontSize: 16),
+                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 16),
                           ),
 
                         if (product["on_sale"] == true &&
