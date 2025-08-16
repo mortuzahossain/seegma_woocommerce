@@ -36,7 +36,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
   late TextEditingController billingPostcode;
   late TextEditingController billingPhone;
 
-  final TextEditingController _couponController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
 
   Map<String, dynamic>? cart = {};
@@ -100,9 +99,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
   String _selectedShippingOption = '';
 
   // coupon state
-  bool _couponApplied = false;
-  String _appliedCoupon = '';
-  double _discountPercent = 0.0;
+  bool _showCoupons = false;
+  final List<String> _appliedCoupons = [];
+  final TextEditingController _couponController = TextEditingController();
 
   String _fmt(double v) => "${v.toStringAsFixed(2)}৳";
 
@@ -113,24 +112,14 @@ class _CheckoutPageState extends State<CheckoutPage> {
       return;
     }
 
-    // Example: support only 'free10' coupon for 10% off
-    if (code == 'free10') {
-      setState(() {
-        _couponApplied = true;
-        _appliedCoupon = 'free10';
-        _discountPercent = 10.0;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Coupon applied: free10 (10% off)")));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Invalid coupon")));
-    }
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    cartProvider.applyCoupon(code);
   }
 
   void _removeCoupon() {
     setState(() {
-      _couponApplied = false;
-      _appliedCoupon = '';
-      _discountPercent = 0.0;
+      // _couponApplied = false;
+      // _discountPercent = 0.0;
       _couponController.clear();
     });
   }
@@ -173,6 +162,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
     billingState.text = billing['billing_state'] ?? "";
     billingPostcode.text = billing['billing_postcode'] ?? "";
     billingPhone.text = billing['billing_phone'] ?? "";
+
+    final coupons = cart?["coupons"] as List<dynamic>? ?? [];
+    _appliedCoupons.clear();
+    for (var c in coupons) {
+      final code = c['coupon']?.toString() ?? '';
+      if (code.isNotEmpty) _appliedCoupons.add(code);
+    }
+
+    // Show the coupon section if there are any applied
+    if (_appliedCoupons.isNotEmpty) _showCoupons = true;
 
     return Scaffold(
       appBar: AppBar(title: const Text("Checkout")),
@@ -411,11 +410,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
               // Coupon & summary rows
               const SizedBox(),
               _summaryRow("Subtotal", _fmt((double.tryParse(cart?["totals"]['subtotal'] ?? '0') ?? 0) / 100)),
-              if (_couponApplied)
-                _summaryRow(
-                  "Discount ($_appliedCoupon)",
-                  "-${_fmt((double.tryParse(cart?["totals"]['discount_total'] ?? '0') ?? 0) / 100)}",
-                ),
+              // if (_couponApplied)
+              _summaryRow(
+                "Discount (${_appliedCoupons.join(', ')})",
+                "-${_fmt((double.tryParse(cart?["totals"]['discount_total'] ?? '0') ?? 0) / 100)}",
+              ),
               _summaryRow("Shipping", _fmt((double.tryParse(cart?["totals"]['shipping_total'] ?? '0') ?? 0) / 100)),
               const Divider(),
               _summaryRow("Total", _fmt((double.tryParse(cart?["totals"]['total'] ?? '0') ?? 0) / 100), bold: true),
@@ -467,9 +466,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
-  bool _showCoupons = false;
-  final List<String> _appliedCoupons = [];
-
   Widget _buildCouponSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -487,11 +483,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             ElevatedButton(
               onPressed: () {
                 if (_couponController.text.isNotEmpty && !_appliedCoupons.contains(_couponController.text.trim())) {
-                  setState(() {
-                    _appliedCoupons.add(_couponController.text.trim());
-                    _couponController.clear();
-                    _showCoupons = true; // auto expand on first add
-                  });
+                  _applyCoupon();
                 }
               },
               child: const Text("Apply"),

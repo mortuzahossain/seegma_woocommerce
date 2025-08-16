@@ -53,10 +53,20 @@ class CartProvider extends ChangeNotifier {
   }
 
   // ---------------------
-  // --------------------
   Future<void> changeShippingMethod(String rateId) async {
     try {
       await ApiService.post('/hh/v1/update-shipping', body: {"rate_id": rateId});
+      fetchCart();
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error updating quantity: $e');
+    }
+  }
+
+  // ---------------------
+  Future<void> applyCoupon(String coupon) async {
+    try {
+      await ApiService.post('/hh/v1/apply-coupon', body: {"coupon": coupon});
       fetchCart();
       notifyListeners();
     } catch (e) {
