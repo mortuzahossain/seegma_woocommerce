@@ -48,10 +48,10 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.lightBackground,
       appBarTheme: const AppBarTheme(backgroundColor: AppColors.primaryBlue, foregroundColor: Colors.white, centerTitle: true),
       tabBarTheme: TabBarThemeData(
-        indicatorColor: Colors.white,
-        labelColor: Colors.white,
-        unselectedLabelColor: Colors.white70,
-        indicatorSize: TabBarIndicatorSize.tab,
+        labelColor: Colors.blue,
+        unselectedLabelColor: Colors.grey,
+        indicator: UnderlineTabIndicator(borderSide: BorderSide(color: Colors.blue, width: 2)),
+        // indicatorSize: TabBarIndicatorSize.tab,
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
         backgroundColor: AppColors.secondaryGreen,

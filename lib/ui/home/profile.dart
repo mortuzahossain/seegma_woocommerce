@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:seegma_woocommerce/ui/auth/login.dart';
+import 'package:seegma_woocommerce/ui/home/orders.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -85,7 +86,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 if (isLoggedIn) _divider(),
                 if (isLoggedIn) _buildOption(icon: FontAwesomeIcons.lock, title: "Change Password", onTap: () {}),
                 if (isLoggedIn) _divider(),
-                if (isLoggedIn) _buildOption(icon: FontAwesomeIcons.boxOpen, title: "Orders", onTap: () {}),
+                if (isLoggedIn)
+                  _buildOption(
+                    icon: FontAwesomeIcons.boxOpen,
+                    title: "Orders",
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => OrdersPage()));
+                    },
+                  ),
                 // if (isLoggedIn) _divider(),
                 // if (isLoggedIn) _buildOption(icon: FontAwesomeIcons.solidHeart, title: "Favorites", onTap: () {}),
                 // if (isLoggedIn) _divider(),

@@ -271,7 +271,7 @@ class _CartPageState extends State<CartPage> {
                     backgroundColor: Colors.blue,
                   ),
                   onPressed: () {
-                    var cart = Provider.of<CartProvider>(context, listen: false).cart;
+                    // Provider.of<CartProvider>(context, listen: false).cart;
                     // print(cart);
                     Navigator.push(context, MaterialPageRoute(builder: (_) => CheckoutPage()));
                   },
