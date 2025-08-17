@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:seegma_woocommerce/ui/auth/login.dart';
 import 'package:seegma_woocommerce/ui/home/orders.dart';
+import 'package:seegma_woocommerce/ui/home/support.dart';
 import 'package:seegma_woocommerce/ui/more/static_content.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -103,7 +104,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 if (isLoggedIn) _divider(),
                 if (isLoggedIn) _buildOption(icon: FontAwesomeIcons.locationDot, title: "Addresses", onTap: () {}),
                 if (isLoggedIn) _divider(),
-                _buildOption(icon: FontAwesomeIcons.headset, title: "Support", onTap: () {}),
+                _buildOption(
+                  icon: FontAwesomeIcons.headset,
+                  title: "Support",
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => SupportPage()));
+                  },
+                ),
                 _divider(),
                 _buildOption(
                   icon: FontAwesomeIcons.fileContract,
