@@ -5,6 +5,7 @@ import 'package:seegma_woocommerce/provider/category_product_provider.dart';
 import 'package:seegma_woocommerce/provider/category_provider.dart';
 import 'package:seegma_woocommerce/provider/home_provider.dart';
 import 'package:seegma_woocommerce/provider/product_details_provider.dart';
+import 'package:seegma_woocommerce/provider/search_provider.dart';
 import 'package:seegma_woocommerce/provider/slider_provider.dart';
 import 'package:seegma_woocommerce/provider/tryon_provider.dart';
 import 'package:seegma_woocommerce/ui/home/dashboard.dart';
@@ -25,6 +26,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => ProductDetailsProvider()),
         ChangeNotifierProvider(create: (_) => TryOnProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => SearchProvider()),
       ],
       child: const MainApp(),
     ),

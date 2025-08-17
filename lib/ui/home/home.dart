@@ -6,6 +6,7 @@ import 'package:seegma_woocommerce/provider/slider_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:seegma_woocommerce/ui/common/product.dart';
 import 'package:seegma_woocommerce/ui/home/products.dart';
+import 'package:seegma_woocommerce/ui/home/search.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -36,7 +37,15 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Image.asset('assets/logo.png', height: 40, color: Colors.white, colorBlendMode: BlendMode.srcIn),
         centerTitle: false,
-        actions: [IconButton(icon: const Icon(FontAwesomeIcons.solidBell), onPressed: () {})],
+        actions: [
+          IconButton(
+            icon: const Icon(FontAwesomeIcons.magnifyingGlass),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => SearchPage()));
+            },
+          ),
+          IconButton(icon: const Icon(FontAwesomeIcons.solidBell), onPressed: () {}),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
