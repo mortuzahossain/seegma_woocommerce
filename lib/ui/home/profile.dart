@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:seegma_woocommerce/ui/auth/login.dart';
 import 'package:seegma_woocommerce/ui/home/orders.dart';
+import 'package:seegma_woocommerce/ui/more/static_content.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -94,6 +95,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       Navigator.push(context, MaterialPageRoute(builder: (_) => OrdersPage()));
                     },
                   ),
+                // StaticContentPage
                 // if (isLoggedIn) _divider(),
                 // if (isLoggedIn) _buildOption(icon: FontAwesomeIcons.solidHeart, title: "Favorites", onTap: () {}),
                 // if (isLoggedIn) _divider(),
@@ -103,9 +105,27 @@ class _ProfilePageState extends State<ProfilePage> {
                 if (isLoggedIn) _divider(),
                 _buildOption(icon: FontAwesomeIcons.headset, title: "Support", onTap: () {}),
                 _divider(),
-                _buildOption(icon: FontAwesomeIcons.fileContract, title: "Terms & Condition", onTap: () {}),
+                _buildOption(
+                  icon: FontAwesomeIcons.fileContract,
+                  title: "Terms & Condition",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => StaticContentPage(title: "Privacy Policy", pageId: 11)),
+                    );
+                  },
+                ),
                 _divider(),
-                _buildOption(icon: FontAwesomeIcons.shieldHalved, title: "Privacy Policy", onTap: () {}),
+                _buildOption(
+                  icon: FontAwesomeIcons.shieldHalved,
+                  title: "Privacy Policy",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => StaticContentPage(title: "Privacy Policy", pageId: 3)),
+                    );
+                  },
+                ),
                 if (isLoggedIn) _divider(),
                 if (isLoggedIn)
                   _buildOption(
