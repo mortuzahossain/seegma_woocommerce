@@ -68,14 +68,30 @@ class CartProvider extends ChangeNotifier {
   }
 
   // ---------------------
-  Future<void> applyCoupon(String coupon) async {
-    try {
-      await ApiService.post('/hh/v1/apply-coupon', body: {"coupon": coupon});
-      fetchCart();
-      notifyListeners();
-    } catch (e) {
-      debugPrint('Error updating quantity: $e');
-    }
+  Future<void> applyCoupon(BuildContext context, String coupon) async {
+    await _handleApiCall(
+      context,
+      endpoint: '/hh/v1/apply-coupon',
+      body: {"coupon": coupon},
+      successMessage: 'Coupon applied successfully!',
+      onSuccess: () {
+        fetchCart();
+        notifyListeners();
+      },
+    );
+  }
+
+  Future<void> removeCoupon(BuildContext context, String coupon) async {
+    await _handleApiCall(
+      context,
+      endpoint: '/hh/v1/remove-coupon',
+      body: {"coupon": coupon},
+      successMessage: 'Coupon removed successfully!',
+      onSuccess: () {
+        fetchCart();
+        notifyListeners();
+      },
+    );
   }
 
   Future<void> placeOrder(BuildContext context) async {
@@ -91,14 +107,55 @@ class CartProvider extends ChangeNotifier {
 
       Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const DashboardScreen()), (route) => false);
     } catch (e) {
+      LoadingDialog.hide(context);
       final message = e is Exception ? e.toString().replaceFirst('Exception:', '') : 'Something went wrong';
       final RegExp exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
       String plainText = message.replaceAll(exp, '').trim();
       if (plainText.startsWith('Error:')) {
         plainText = plainText.replaceFirst('Error:', '').trim();
       }
-      LoadingDialog.hide(context);
       showAwesomeSnackbar(context: context, type: ContentType.failure, title: 'Failed!', message: plainText);
+    }
+  }
+
+  // HELPER
+  Future<void> _handleApiCall(
+    BuildContext context, {
+    required String endpoint,
+    required Map<String, dynamic> body,
+    required String successMessage,
+    VoidCallback? onSuccess,
+  }) async {
+    try {
+      LoadingDialog.show(context);
+      final response = await ApiService.post(endpoint, body: body);
+
+      if (response['status'] == true) {
+        showAwesomeSnackbar(
+          context: context,
+          type: ContentType.success,
+          title: 'Success!',
+          message: response['message'] ?? successMessage,
+        );
+        onSuccess?.call();
+      } else {
+        showAwesomeSnackbar(
+          context: context,
+          type: ContentType.failure,
+          title: 'Failed!',
+          message: response['message'] ?? 'Something went wrong',
+        );
+      }
+    } catch (e) {
+      final message = e is Exception ? e.toString().replaceFirst('Exception:', '') : 'Something went wrong';
+      final RegExp exp = RegExp(r"<[^>]*>", multiLine: true, caseSensitive: true);
+      String plainText = message.replaceAll(exp, '').trim();
+      if (plainText.startsWith('Error:')) {
+        plainText = plainText.replaceFirst('Error:', '').trim();
+      }
+      showAwesomeSnackbar(context: context, type: ContentType.failure, title: 'Failed!', message: plainText);
+    } finally {
+      LoadingDialog.hide(context);
     }
   }
 }

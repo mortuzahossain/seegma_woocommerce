@@ -113,15 +113,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
     }
 
     final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    cartProvider.applyCoupon(code);
+    cartProvider.applyCoupon(context, code);
+    _couponController.clear();
   }
 
-  void _removeCoupon() {
-    setState(() {
-      // _couponApplied = false;
-      // _discountPercent = 0.0;
-      _couponController.clear();
-    });
+  void _removeCoupon(String code) {
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    cartProvider.removeCoupon(context, code);
   }
 
   @override
@@ -519,12 +517,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     label: Text(coupon),
                     deleteIcon: const Icon(Icons.close),
                     onDeleted: () {
-                      setState(() {
-                        _appliedCoupons.remove(coupon);
-                        if (_appliedCoupons.isEmpty) {
-                          _showCoupons = false;
-                        }
-                      });
+                      _removeCoupon(coupon);
                     },
                   ),
                 )
