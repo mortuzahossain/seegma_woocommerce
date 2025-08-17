@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:seegma_woocommerce/provider/search_provider.dart';
 import 'package:seegma_woocommerce/ui/common/product.dart';
+import 'package:seegma_woocommerce/utils/loading_dialog.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -112,10 +113,7 @@ class _SearchPageState extends State<SearchPage> {
                         final product = provider.products[index];
                         return ProductCard(product: product);
                       } else {
-                        return const Padding(
-                          padding: EdgeInsets.all(12),
-                          child: Center(child: CircularProgressIndicator()),
-                        );
+                        return Padding(padding: EdgeInsets.all(12), child: animatedLoader());
                       }
                     },
                   ),

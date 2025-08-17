@@ -159,7 +159,7 @@ class _CartPageState extends State<CartPage> {
                                           width: 80,
                                           height: 80,
                                           color: Colors.grey[300],
-                                          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                                          child: Center(child: animatedLoader()),
                                         ),
                                         errorWidget: (_, __, ___) => Container(
                                           width: 80,

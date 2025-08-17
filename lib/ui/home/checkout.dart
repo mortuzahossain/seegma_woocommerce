@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:seegma_woocommerce/provider/cart_provider.dart';
+import 'package:seegma_woocommerce/utils/loading_dialog.dart';
 
 class CheckoutPage extends StatefulWidget {
   const CheckoutPage({super.key});
@@ -382,12 +383,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     return ListTile(
                       leading: CachedNetworkImage(
                         imageUrl: it['featured_image'] != null && it['featured_image'].isNotEmpty ? it['featured_image'] : "",
-
-                        placeholder: (context, url) => const SizedBox(
-                          width: 40,
-                          height: 40,
-                          child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-                        ),
+                        placeholder: (context, url) => SizedBox(width: 40, height: 40, child: animatedLoader()),
                         errorWidget: (context, url, error) => const FaIcon(FontAwesomeIcons.image, size: 30, color: Colors.grey),
                         width: 50,
                         height: 50,

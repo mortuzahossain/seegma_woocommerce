@@ -12,6 +12,7 @@ import 'package:seegma_woocommerce/provider/slider_provider.dart';
 import 'package:seegma_woocommerce/provider/tryon_provider.dart';
 import 'package:seegma_woocommerce/ui/home/dashboard.dart';
 import 'package:seegma_woocommerce/ui/others/onboarding.dart';
+import 'package:seegma_woocommerce/utils/loading_dialog.dart';
 import 'package:seegma_woocommerce/utils/themes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -57,7 +58,7 @@ class MainApp extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
             // Splash / loading screen
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+            return Scaffold(body: animatedLoader());
           }
 
           final shown = snapshot.data ?? false;

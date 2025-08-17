@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart' show Provider, Consumer;
 import 'package:seegma_woocommerce/provider/category_provider.dart';
 import 'package:seegma_woocommerce/ui/home/products.dart';
+import 'package:seegma_woocommerce/utils/loading_dialog.dart';
 import 'package:seegma_woocommerce/utils/themes.dart';
 
 class DiscoverPage extends StatefulWidget {
@@ -111,7 +112,7 @@ class _DiscoverPageState extends State<DiscoverPage> {
               child: Consumer<CategoriesProvider>(
                 builder: (context, provider, _) {
                   if (provider.isLoading) {
-                    return const Center(child: CircularProgressIndicator());
+                    return Center(child: animatedLoader());
                   }
 
                   // Initialize lists if first load

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:seegma_woocommerce/provider/order_details_provider.dart';
 import 'package:seegma_woocommerce/ui/home/product_details.dart';
+import 'package:seegma_woocommerce/utils/loading_dialog.dart';
 
 class OrderDetailsPage extends StatelessWidget {
   final int orderId;
@@ -20,7 +21,7 @@ class OrderDetailsPage extends StatelessWidget {
         body: Consumer<OrderDetailsProvider>(
           builder: (context, provider, _) {
             if (provider.loading) {
-              return const Center(child: CircularProgressIndicator());
+              return animatedLoader();
             }
             if (provider.error != null) {
               return Center(child: Text(provider.error!));

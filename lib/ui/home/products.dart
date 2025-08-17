@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:seegma_woocommerce/provider/category_product_provider.dart';
 import 'package:seegma_woocommerce/ui/common/product.dart';
+import 'package:seegma_woocommerce/utils/loading_dialog.dart';
 
 class ProductsPage extends StatefulWidget {
   final Map<String, dynamic> category;
@@ -53,7 +54,7 @@ class _ProductsPageState extends State<ProductsPage> {
         child: Consumer<CategoryProductsProvider>(
           builder: (context, provider, _) {
             if (provider.isLoading && provider.products.isEmpty) {
-              return const Center(child: CircularProgressIndicator());
+              return animatedLoader();
             }
 
             if (provider.hasError && provider.products.isEmpty) {
@@ -77,7 +78,7 @@ class _ProductsPageState extends State<ProductsPage> {
               itemBuilder: (context, index) {
                 if (index == provider.products.length) {
                   // show loader at bottom for next page
-                  return const Center(child: CircularProgressIndicator());
+                  return animatedLoader();
                 }
 
                 final product = provider.products[index];

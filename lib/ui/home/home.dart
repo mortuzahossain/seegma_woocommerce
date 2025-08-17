@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:seegma_woocommerce/ui/common/product.dart';
 import 'package:seegma_woocommerce/ui/home/products.dart';
 import 'package:seegma_woocommerce/ui/home/search.dart';
+import 'package:seegma_woocommerce/utils/loading_dialog.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -57,7 +58,7 @@ class _HomePageState extends State<HomePage> {
             Consumer<SliderProvider>(
               builder: (context, provider, _) {
                 if (provider.isLoading) {
-                  return const SizedBox(height: 180, child: Center(child: CircularProgressIndicator()));
+                  return SizedBox(height: 180, child: Center(child: animatedLoader()));
                 }
 
                 if (provider.sliderData.isEmpty) {
@@ -110,7 +111,7 @@ class _HomePageState extends State<HomePage> {
               child: Consumer<HomepageProvider>(
                 builder: (context, provider, _) {
                   if (provider.isLoading) {
-                    return const Center(child: CircularProgressIndicator());
+                    return animatedLoader();
                   }
 
                   if (provider.categories.isEmpty) {
@@ -156,7 +157,7 @@ class _HomePageState extends State<HomePage> {
             Consumer<HomepageProvider>(
               builder: (context, provider, _) {
                 if (provider.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return animatedLoader();
                 }
 
                 if (provider.homepagedata.isEmpty) {

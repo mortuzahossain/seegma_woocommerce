@@ -230,7 +230,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
       ),
       body: Consumer<ProductDetailsProvider>(
         builder: (context, provider, _) {
-          if (provider.isLoading) return const Center(child: CircularProgressIndicator());
+          if (provider.isLoading) return animatedLoader();
           if (provider.hasError) return const Center(child: Text('Failed to load product'));
 
           final product = provider.product;
@@ -505,7 +505,7 @@ class _ImageSliderState extends State<_ImageSlider> {
                   imageUrl: widget.imageUrls[index],
                   fit: BoxFit.scaleDown,
                   width: double.infinity,
-                  placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                  placeholder: (context, url) => animatedLoader(),
                   errorWidget: (context, url, error) => const Icon(Icons.error, size: 40),
                 ),
               );
