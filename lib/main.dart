@@ -4,6 +4,7 @@ import 'package:seegma_woocommerce/provider/cart_provider.dart';
 import 'package:seegma_woocommerce/provider/category_product_provider.dart';
 import 'package:seegma_woocommerce/provider/category_provider.dart';
 import 'package:seegma_woocommerce/provider/home_provider.dart';
+import 'package:seegma_woocommerce/provider/notification_provider.dart';
 import 'package:seegma_woocommerce/provider/order_details_provider.dart';
 import 'package:seegma_woocommerce/provider/order_provider.dart';
 import 'package:seegma_woocommerce/provider/product_details_provider.dart';
@@ -32,6 +33,7 @@ void main() {
         ChangeNotifierProvider(create: (_) => SearchProvider()),
         ChangeNotifierProvider(create: (_) => OrderProvider()),
         ChangeNotifierProvider(create: (_) => OrderDetailsProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: const MainApp(),
     ),

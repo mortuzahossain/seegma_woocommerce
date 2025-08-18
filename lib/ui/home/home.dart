@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:seegma_woocommerce/ui/common/product.dart';
 import 'package:seegma_woocommerce/ui/home/products.dart';
 import 'package:seegma_woocommerce/ui/home/search.dart';
+import 'package:seegma_woocommerce/ui/others/notifications.dart';
 import 'package:seegma_woocommerce/utils/loading_dialog.dart';
 
 class HomePage extends StatefulWidget {
@@ -45,7 +46,12 @@ class _HomePageState extends State<HomePage> {
               Navigator.push(context, MaterialPageRoute(builder: (_) => SearchPage()));
             },
           ),
-          IconButton(icon: const Icon(FontAwesomeIcons.solidBell), onPressed: () {}),
+          IconButton(
+            icon: const Icon(FontAwesomeIcons.solidBell),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => NotificationScreen()));
+            },
+          ),
         ],
       ),
       body: SingleChildScrollView(
