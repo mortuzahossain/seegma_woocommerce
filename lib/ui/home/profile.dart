@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:seegma_woocommerce/ui/auth/account_update.dart';
+import 'package:seegma_woocommerce/ui/auth/address_management.dart';
 import 'package:seegma_woocommerce/ui/auth/change_password.dart';
 import 'package:seegma_woocommerce/ui/auth/login.dart';
 import 'package:seegma_woocommerce/ui/home/orders.dart';
 import 'package:seegma_woocommerce/ui/home/support.dart';
 import 'package:seegma_woocommerce/ui/more/static_content.dart';
+import 'package:seegma_woocommerce/ui/others/contact_us.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -85,7 +88,14 @@ class _ProfilePageState extends State<ProfilePage> {
             elevation: 0,
             child: Column(
               children: [
-                if (isLoggedIn) _buildOption(icon: FontAwesomeIcons.user, title: "Account details", onTap: () {}),
+                if (isLoggedIn)
+                  _buildOption(
+                    icon: FontAwesomeIcons.user,
+                    title: "Account details",
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => AccountUpdatePage()));
+                    },
+                  ),
                 if (isLoggedIn) _divider(),
                 if (isLoggedIn)
                   _buildOption(
@@ -110,7 +120,14 @@ class _ProfilePageState extends State<ProfilePage> {
                 // if (isLoggedIn) _divider(),
                 // if (isLoggedIn) _buildOption(icon: FontAwesomeIcons.download, title: "Downloads", onTap: () {}),
                 if (isLoggedIn) _divider(),
-                if (isLoggedIn) _buildOption(icon: FontAwesomeIcons.locationDot, title: "Addresses", onTap: () {}),
+                if (isLoggedIn)
+                  _buildOption(
+                    icon: FontAwesomeIcons.locationDot,
+                    title: "Addresses",
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => AddressPage()));
+                    },
+                  ),
                 if (isLoggedIn) _divider(),
                 _buildOption(
                   icon: FontAwesomeIcons.headset,
@@ -139,6 +156,14 @@ class _ProfilePageState extends State<ProfilePage> {
                       context,
                       MaterialPageRoute(builder: (_) => StaticContentPage(title: "Privacy Policy", pageId: 3)),
                     );
+                  },
+                ),
+                _divider(),
+                _buildOption(
+                  icon: FontAwesomeIcons.envelope,
+                  title: "Contact Us",
+                  onTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => ContactUs()));
                   },
                 ),
                 if (isLoggedIn) _divider(),
@@ -195,6 +220,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget _buildOption({required IconData icon, required String title, required VoidCallback onTap, Color? color}) {
     final Map<IconData, Color> iconColors = {
       FontAwesomeIcons.lock: Colors.blue, // Dashboard (if you meant lock here)
+      FontAwesomeIcons.envelope: Colors.blue, // Dashboard (if you meant lock here)
       FontAwesomeIcons.boxOpen: Colors.orange, // Orders
       FontAwesomeIcons.download: Colors.green, // Downloads
       FontAwesomeIcons.locationDot: Colors.purple, // Addresses
