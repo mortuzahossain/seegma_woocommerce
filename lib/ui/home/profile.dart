@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:seegma_woocommerce/ui/auth/change_password.dart';
 import 'package:seegma_woocommerce/ui/auth/login.dart';
 import 'package:seegma_woocommerce/ui/home/orders.dart';
 import 'package:seegma_woocommerce/ui/home/support.dart';
@@ -86,7 +87,14 @@ class _ProfilePageState extends State<ProfilePage> {
               children: [
                 if (isLoggedIn) _buildOption(icon: FontAwesomeIcons.user, title: "Account details", onTap: () {}),
                 if (isLoggedIn) _divider(),
-                if (isLoggedIn) _buildOption(icon: FontAwesomeIcons.lock, title: "Change Password", onTap: () {}),
+                if (isLoggedIn)
+                  _buildOption(
+                    icon: FontAwesomeIcons.lock,
+                    title: "Change Password",
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => ChangePassword()));
+                    },
+                  ),
                 if (isLoggedIn) _divider(),
                 if (isLoggedIn)
                   _buildOption(
