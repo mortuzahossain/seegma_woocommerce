@@ -43,6 +43,7 @@ class MainApp extends StatelessWidget {
 
   Future<bool> _checkOnboardingShown() async {
     final prefs = await SharedPreferences.getInstance();
+    prefs.getBool('onboarding_shown') ?? false;
     return prefs.getBool('onboarding_shown') ?? false;
   }
 
@@ -57,12 +58,11 @@ class MainApp extends StatelessWidget {
         future: _checkOnboardingShown(),
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
-            // Splash / loading screen
             return Scaffold(body: animatedLoader());
           }
 
-          final shown = snapshot.data ?? false;
-          return shown ? const DashboardScreen() : const OnboardingScreen();
+          if (!snapshot.hasData) return const Scaffold();
+          return snapshot.data! ? const DashboardScreen() : const OnboardingScreen();
         },
       ),
     );
