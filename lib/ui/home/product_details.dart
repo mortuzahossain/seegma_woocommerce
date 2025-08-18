@@ -274,7 +274,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
                           Text(
                             "${AppText.currency}${(product["regular_price"]?.toString().isNotEmpty ?? false) ? product["regular_price"] : product["price"] ?? ''}",
                             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              color: (product["on_sale"] == true) ? Colors.grey : Colors.black,
+                              // color: (product["on_sale"] == true) ? Colors.grey : Colors.black,
                               decoration:
                                   (product["on_sale"] == true && (product["regular_price"]?.toString().isNotEmpty ?? false))
                                   ? TextDecoration.lineThrough

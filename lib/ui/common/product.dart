@@ -56,10 +56,11 @@ class ProductCard extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      product["name"] ?? '',
+                      // product["name"] ?? '',
+                      'Hello world. welcome to my name',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ),
 
@@ -86,7 +87,7 @@ class ProductCard extends StatelessWidget {
                           "${AppText.currency}${product["regular_price"] != null && product["regular_price"].toString().isNotEmpty ? product["regular_price"] : product["price"] ?? ''}",
                           style: TextStyle(
                             fontSize: 14,
-                            color: product["on_sale"] == true ? Colors.grey : Colors.black,
+                            // color: product["on_sale"] == true ? Colors.grey : Colors.black,
                             decoration:
                                 (product["on_sale"] == true &&
                                     product["regular_price"] != null &&
@@ -104,8 +105,8 @@ class ProductCard extends StatelessWidget {
                 bottom: 0,
                 right: 0,
                 child: Container(
-                  height: 40,
-                  width: 40,
+                  height: 34,
+                  width: 34,
                   decoration: BoxDecoration(
                     color: Colors.blueAccent,
                     borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), bottomRight: Radius.circular(8)),

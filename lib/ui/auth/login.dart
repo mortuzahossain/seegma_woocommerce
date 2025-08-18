@@ -27,8 +27,8 @@ class _LoginState extends State<Login> {
     // _usernameController.text = 'mortuza';
     // _passwordController.text = '123456';
 
-    _usernameController.text = 'seegmaic';
-    _passwordController.text = 'Asdf@2021';
+    // _usernameController.text = 'seegmaic';
+    // _passwordController.text = 'Asdf@2021';
   }
 
   @override
