@@ -97,26 +97,27 @@ class _SearchPageState extends State<SearchPage> {
           const SizedBox(height: 12),
 
           Expanded(
-            child: provider.products.isEmpty && !provider.isLoading
-                ? const Center(child: Text("No products found"))
-                : GridView.builder(
-                    controller: _scrollController,
-                    itemCount: provider.products.length + (provider.hasMore ? 1 : 0),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 8,
-                      mainAxisSpacing: 8,
-                      childAspectRatio: 0.74,
-                    ),
-                    itemBuilder: (context, index) {
-                      if (index < provider.products.length) {
-                        final product = provider.products[index];
-                        return ProductCard(product: product);
-                      } else {
-                        return Padding(padding: EdgeInsets.all(12), child: animatedLoader());
-                      }
-                    },
-                  ),
+            child: Stack(
+              children: [
+                provider.products.isEmpty && !provider.isLoading
+                    ? const Center(child: Text("No products found"))
+                    : GridView.builder(
+                        controller: _scrollController,
+                        itemCount: provider.products.length,
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                          childAspectRatio: 0.74,
+                        ),
+                        itemBuilder: (context, index) {
+                          final product = provider.products[index];
+                          return ProductCard(product: product);
+                        },
+                      ),
+                if (provider.isLoading) animatedLoader(),
+              ],
+            ),
           ),
         ],
       ),

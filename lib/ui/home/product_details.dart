@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:photo_view/photo_view.dart';
@@ -424,9 +426,14 @@ void _showTryOnBottomSheet(BuildContext context, int productId) {
                     final picked = await picker.pickImage(source: ImageSource.gallery);
                     if (picked == null) return;
 
+                    final bytes = await picked.readAsBytes();
+                    final ext = picked.path.split('.').last.toLowerCase();
+
+                    String avatarBase64 = 'data:image/$ext;base64,${base64Encode(bytes)}';
+
                     // call API via provider
                     final provider = Provider.of<TryOnProvider>(context, listen: false);
-                    await provider.processTryOn(context, productId, picked.path);
+                    await provider.processTryOn(context, productId, avatarBase64);
 
                     if (provider.processedImageUrl != null && context.mounted) {
                       Navigator.push(
