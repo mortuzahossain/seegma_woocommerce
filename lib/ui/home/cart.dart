@@ -232,9 +232,7 @@ class _CartPageState extends State<CartPage> {
                       const SizedBox(height: 16),
                       Text(
                         "Oops! Your cart is empty.",
-                        style: Theme.of(
-                          context,
-                        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.black87),
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 8),
