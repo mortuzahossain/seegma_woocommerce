@@ -47,7 +47,7 @@ class _AccountUpdatePageState extends State<AccountUpdatePage> {
       lastName.text = prefs.getString('last_name') ?? '';
       nickname.text = prefs.getString('nickname') ?? '';
       mobile.text = prefs.getString('mobile') ?? '';
-      gender = prefs.getString('gender') ?? 'male';
+      gender = (prefs.getString('gender')?.isNotEmpty ?? false) ? prefs.getString('gender')! : 'male';
 
       final profileUrl = prefs.getString('profile_image');
       if (profileUrl != null && profileUrl.isNotEmpty) {

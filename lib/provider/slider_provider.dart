@@ -17,16 +17,16 @@ class SliderProvider with ChangeNotifier {
     final cachedJson = prefs.getString(cacheKey);
     final cachedTime = prefs.getInt(cacheTimeKey);
 
-    if (cachedJson != null && cachedTime != null) {
-      final cacheAge = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(cachedTime));
+    // if (cachedJson != null && cachedTime != null) {
+    //   final cacheAge = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(cachedTime));
 
-      if (cacheAge < cacheDuration) {
-        sliderData = jsonDecode(cachedJson);
-        isLoading = false;
-        notifyListeners();
-        return;
-      }
-    }
+    //   if (cacheAge < cacheDuration) {
+    //     sliderData = jsonDecode(cachedJson);
+    //     isLoading = false;
+    //     notifyListeners();
+    //     return;
+    //   }
+    // }
 
     try {
       final data = await ApiService.get("/hh/v1/slider");

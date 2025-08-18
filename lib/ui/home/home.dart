@@ -68,7 +68,8 @@ class _HomePageState extends State<HomePage> {
                 }
 
                 if (provider.sliderData.isEmpty) {
-                  return const SizedBox(height: 180, child: Center(child: Text("No slider data found")));
+                  return const SizedBox();
+                  // return const SizedBox(height: 180, child: Center(child: Text("No slider data found")));
                 }
 
                 return Column(

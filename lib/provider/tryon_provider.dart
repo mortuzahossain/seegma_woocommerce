@@ -12,8 +12,8 @@ class TryOnProvider extends ChangeNotifier {
       LoadingDialog.show(context);
       final response = await ApiService.postMultipart(
         '/tryon/v1/process',
-        fields: {'product_id': '75'},
-        file: File('/Users/islamicwallet/Downloads/007.png'),
+        fields: {'product_id': productId.toString()},
+        file: File(imagePath),
         fileField: 'avatar_image',
       );
       processedImageUrl = response['image_url'];

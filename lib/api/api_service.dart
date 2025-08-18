@@ -4,7 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://wordpress.test/wp-json';
+  // static const String baseUrl = 'http://wordpress.test/wp-json';
+  static const String baseUrl = 'https://fashion.seegmai.com/wp-json';
 
   static Future<dynamic> get(String endpoint) async {
     try {
@@ -116,7 +117,7 @@ class ApiService {
 
       // add file
       request.files.add(await http.MultipartFile.fromPath(fileField, file.path));
-
+      request.headers.addAll({'Accept': 'application/json'});
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
 

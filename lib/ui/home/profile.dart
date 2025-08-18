@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:seegma_woocommerce/ui/auth/account_update.dart';
@@ -8,6 +9,7 @@ import 'package:seegma_woocommerce/ui/home/orders.dart';
 import 'package:seegma_woocommerce/ui/home/support.dart';
 import 'package:seegma_woocommerce/ui/more/static_content.dart';
 import 'package:seegma_woocommerce/ui/others/contact_us.dart';
+import 'package:seegma_woocommerce/utils/loading_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -19,6 +21,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   String? fullName;
+  String profileUrl = "";
   bool isLoggedIn = false;
 
   @override
@@ -32,10 +35,17 @@ class _ProfilePageState extends State<ProfilePage> {
     final token = prefs.getString('token');
     final firstName = prefs.getString('first_name');
     final lastName = prefs.getString('last_name');
+    profileUrl = prefs.getString('profile_image') ?? "";
 
     setState(() {
       isLoggedIn = token != null && token.isNotEmpty;
-      fullName = isLoggedIn ? '$firstName $lastName' : null;
+
+      if (isLoggedIn) {
+        final hasName = (firstName?.isNotEmpty ?? false) || (lastName?.isNotEmpty ?? false);
+        fullName = hasName ? '${firstName ?? ''} ${lastName ?? ''}'.trim() : 'Please update your profile';
+      } else {
+        fullName = null;
+      }
     });
   }
 
@@ -53,7 +63,23 @@ class _ProfilePageState extends State<ProfilePage> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  CircleAvatar(radius: 28, child: const Icon(Icons.person, size: 32, color: Colors.white)),
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor: Colors.grey.shade300,
+                    child: (profileUrl.isNotEmpty)
+                        ? ClipOval(
+                            child: CachedNetworkImage(
+                              imageUrl: profileUrl,
+                              width: 56,
+                              height: 56,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => SizedBox(width: 24, height: 24, child: animatedLoader()),
+                              errorWidget: (context, url, error) =>
+                                  const FaIcon(FontAwesomeIcons.user, size: 32, color: Colors.white),
+                            ),
+                          )
+                        : const FaIcon(FontAwesomeIcons.user, size: 32, color: Colors.white),
+                  ),
                   const SizedBox(width: 16),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,7 +87,12 @@ class _ProfilePageState extends State<ProfilePage> {
                       Text('Welcome', style: const TextStyle(fontSize: 14, color: Colors.grey)),
                       const SizedBox(height: 4),
                       isLoggedIn
-                          ? Text(fullName ?? '', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold))
+                          ? Text(
+                              fullName ?? '',
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            )
                           : GestureDetector(
                               onTap: () {
                                 Navigator.push(context, MaterialPageRoute(builder: (_) => const Login()));
@@ -93,7 +124,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     icon: FontAwesomeIcons.user,
                     title: "Account details",
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => AccountUpdatePage()));
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => AccountUpdatePage())).then((onValue) {
+                        _checkLoginStatus();
+                      });
                     },
                   ),
                 if (isLoggedIn) _divider(),
