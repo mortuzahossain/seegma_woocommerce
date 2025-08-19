@@ -56,8 +56,7 @@ class ProductCard extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(
-                      // product["name"] ?? '',
-                      'Hello world. welcome to my name',
+                      product["name"] ?? '',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall,
