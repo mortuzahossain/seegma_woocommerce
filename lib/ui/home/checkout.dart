@@ -126,8 +126,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
   @override
   Widget build(BuildContext context) {
     cart = Provider.of<CartProvider>(context, listen: true).cart;
-    final shippingRates = (cart?['shipping']['packages']['default']['rates'] as Map<String, dynamic>).values.toList();
-    final chosenMethod = cart?['shipping']['packages']['default']['chosen_method'] ?? '';
+    final shippingRates = (cart?['shipping']?['packages']?['default']?['rates'] as Map<String, dynamic>?)?.values.toList() ?? [];
+    final chosenMethod = cart?['shipping']?['packages']?['default']?['chosen_method']?.toString() ?? '';
+
+    // final chosenMethod = cart?['shipping']['packages']['default']['chosen_method'] ?? '';
     _selectedShippingOption = chosenMethod;
 
     final selectedRate = shippingRates.firstWhere((rate) => rate['key'] == _selectedShippingOption, orElse: () => {});

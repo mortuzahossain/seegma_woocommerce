@@ -361,8 +361,11 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> with TickerProv
                           (Provider.of<ProductDetailsProvider>(context, listen: true).product?['purchasable'] ?? false) &&
                               (Provider.of<ProductDetailsProvider>(context, listen: true).product?['stock_status'] ?? '') ==
                                   'instock'
-                          ? () {
-                              _addToCart(context);
+                          ? () async {
+                              var isLoggedIn = await ensureLoggedIn(context);
+                              if (isLoggedIn) {
+                                _addToCart(context);
+                              }
                             }
                           : null,
                       icon: const FaIcon(FontAwesomeIcons.cartPlus, size: 16),
